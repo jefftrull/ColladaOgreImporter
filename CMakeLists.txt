@@ -1,5 +1,14 @@
 # CMake build control file for ColladaOgreImporter
-# by Jeff Trull <jetrull@sbcglobal.net> and released under the MIT License; see LICENSE.txt for details
+# by Jeff Trull <jetrull@sbcglobal.net>
+
+#Copyright (c) 2012 Jeffrey E Trull
+#
+#Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+#
+#The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+#
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
 
 # Example build procedure (Ubuntu):
 # mkdir build;cd build;cmake -DOGRE_HOME=/usr/share/OGRE -DCOLLADA_ROOT=/home/me/opencollada-read-only/ ..;make
@@ -40,13 +49,28 @@ elseif((DEFINED $ENV{OGRE_HOME}) AND (EXISTS $ENV{OGRE_HOME}/cmake/modules))
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{OGRE_HOME}/cmake/modules)
 endif()
 
-find_package(Boost REQUIRED system filesystem)
+find_package(Boost REQUIRED filesystem system)
 
 find_package(OGRE 1.7.3 REQUIRED)
 
 include_directories(SYSTEM ${COLLADAFW_INCLUDE_DIR} ${COLLADASAX_INCLUDE_DIR} ${COLLADABASE_INCLUDE_DIR} ${OGRE_INCLUDE_DIRS})
 
-add_executable(c2mesh collada2ogre.cpp OgreMeshWriter.cpp OgreColladaWriter.cpp)
+if (CMAKE_COMPILER_IS_GNUCXX)
+  # for unique_ptr, at least, and possibly other things
+  add_definitions(-std=c++0x -Wall)
+endif()
+
+# make a library out of the Collada stuff
+add_library(collada_importer OgreMeshWriter.cpp OgreSceneWriter.cpp OgreColladaWriter.cpp)
 # assume we have xml2 and pcre (definitely available on Ubuntu) but others come from OpenCollada dir
-target_link_libraries(c2mesh ${OGRE_LIBRARIES} ${Boost_LIBRARIES} ${COLLADASAX_LIB} ${COLLADASAXP_LIB} ${COLLADAFW_LIB} ${COLLADABU_LIB} ${UTF_LIB} xml2 pcre ${MATHML_LIB})
-# BOZO separate into libs?
+target_link_libraries(collada_importer ${COLLADASAX_LIB} ${COLLADASAXP_LIB} ${COLLADAFW_LIB} ${COLLADABU_LIB} ${UTF_LIB} xml2 pcre ${MATHML_LIB})
+
+# data conversion app
+add_executable(c2mesh collada2ogre.cpp)
+set(APPLIBS ${OGRE_LIBRARIES} ${Boost_LIBRARIES} collada_importer)
+target_link_libraries(c2mesh ${APPLIBS})
+
+# viewer app
+
+add_executable(cview simple_viewer.cpp)
+target_link_libraries(cview ${APPLIBS})
