@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 {
   Ogre::Root root;
   Ogre::RenderSystemList rlist = root.getAvailableRenderers();
-  for (int i = 0; i < rlist.size(); ++i) {
+  for (size_t i = 0; i < rlist.size(); ++i) {
     LOG_DEBUG("renderer: " + rlist[i]->getName());
   }
 

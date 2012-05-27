@@ -72,10 +72,10 @@ class OgreColladaWriter : public COLLADAFW::IWriter {
   OgreColladaWriter(const Ogre::String&, const char*, bool, bool);
 
   // geometry statistics and debug tools are useful to child classes
+  const Ogre::String& m_dir;   // directory relative to which we can find texture images etc.
   const char* m_dotfn;   // where (and if) to dump DOT output describing the scene hierarchy
   void dump_as_dot(std::ostream& os);
   bool m_checkNormals;         // whether to do checking of the surface normals against vertex winding order
-  const Ogre::String& m_dir;   // directory relative to which we can find texture images etc.
 
   // starting points for final processing
   std::vector<const COLLADAFW::Node*> m_vsRootNodes;                 // top-level nodes

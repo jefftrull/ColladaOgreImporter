@@ -34,7 +34,7 @@ class OgreSceneWriter : public OgreColladaWriter {
   bool createSceneDFS(const COLLADAFW::Node*, Ogre::SceneNode*, const Ogre::String& prefix = "");
   bool processLibraryInstance(const COLLADAFW::InstanceNode*, Ogre::SceneNode*, const Ogre::String& prefix);
 
-  Ogre::SceneManager* m_sceneMgr;
   Ogre::SceneNode* m_topNode;
+  Ogre::SceneManager* m_sceneMgr;
 
 };

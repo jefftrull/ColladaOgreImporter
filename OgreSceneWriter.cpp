@@ -242,6 +242,7 @@ bool OgreSceneWriter::createSceneDFS(const COLLADAFW::Node* cn, Ogre::SceneNode*
 	for (int j = 0, tcount = tba.getCount(); j < tcount; ++j) {
 	  const COLLADAFW::TextureCoordinateBinding& tcb = tba[j];
 	  // BOZO seems like we should be doing something here!
+	  (void)tcb;
 	}
 	// look up this material and make sure we can find it
 	MaterialMapIterator matit = m_materials.find(mb.getReferencedMaterial());

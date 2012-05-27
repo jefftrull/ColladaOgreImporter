@@ -244,7 +244,7 @@ bool OgreColladaWriter::addGeometry(const COLLADAFW::Geometry* g,         // inp
       COLLADAFW::MaterialId matid = prim.getMaterialId();
       // find any matching entry in the binding array for this instance
       bool found_mat_match = false;
-      for (int j = 0; j < mba->getCount(); ++j) {
+      for (size_t j = 0; j < mba->getCount(); ++j) {
 	const COLLADAFW::MaterialBinding mb = (*mba)[j];
 	if (mb.getMaterialId() == matid) {
 	  MaterialMapIterator matit = m_materials.find(mb.getReferencedMaterial());
@@ -303,8 +303,8 @@ bool OgreColladaWriter::addGeometry(const COLLADAFW::Geometry* g,         // inp
     }
 
     // quick check: all of the index arrays should have the same size
-    int idxsize = collada_indices[0]->getCount();
-    for (int arridx = 0; arridx < collada_indices.size(); arridx++) {
+    size_t idxsize = collada_indices[0]->getCount();
+    for (size_t arridx = 0; arridx < collada_indices.size(); arridx++) {
       if (collada_indices[arridx]->getCount() != idxsize) {
 	LOG_DEBUG("size of index array " + Ogre::StringConverter::toString(arridx) + " is " + Ogre::StringConverter::toString(collada_indices[arridx]->getCount()) + " which disagrees with the first index array size of " + Ogre::StringConverter::toString(idxsize));
       }
@@ -313,7 +313,7 @@ bool OgreColladaWriter::addGeometry(const COLLADAFW::Geometry* g,         // inp
     // now build vertex data while creating new indices
     std::vector<std::vector<Ogre::Real> > vertices;  // data for resulting vertex buffer
     std::vector<Ogre::uint32> indices;               // resultant indices
-    for (int ci = 0; ci < idxsize; ++ci) {           // loop over current (N-tuple) indices
+    for (size_t ci = 0; ci < idxsize; ++ci) {           // loop over current (N-tuple) indices
       // construct map key
       std::vector<unsigned int> multi_idx_key;
       for (int idxno = 0, idxcount = collada_indices.size(); idxno < idxcount; ++idxno) {
@@ -608,7 +608,6 @@ void OgreColladaWriter::node_dfs_dot(std::ostream& os, const COLLADAFW::Node* n,
     int nodeid = nodeids.find(it->second)->second;
     if (parentid != -1) {
       // if a "cell", use a square for the shape
-      const COLLADAFW::Node* ln = it->second;
       os << "node" << parentid << " -> node" << nodeid << std::endl;
     }
   }
