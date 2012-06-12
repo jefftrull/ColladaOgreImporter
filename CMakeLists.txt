@@ -19,16 +19,22 @@
 
 cmake_minimum_required(VERSION 2.8)
 
+enable_testing()
+
 # We need the OpenCollada library.  Users can supply COLLADA_ROOT as a hint
 # includes
 find_path(COLLADAFW_INCLUDE_DIR COLLADAFWRoot.h HINTS ${COLLADA_ROOT}/COLLADAFramework/include)
 find_path(COLLADASAX_INCLUDE_DIR COLLADASaxFWLLoader.h HINTS ${COLLADA_ROOT}/COLLADASaxFrameworkLoader/include)
 find_path(COLLADABASE_INCLUDE_DIR COLLADABUPlatform.h HINTS ${COLLADA_ROOT}/COLLADABaseUtils/include)
+find_path(COLLADASW_INCLUDE_DIR COLLADASWStreamWriter.h HINTS ${COLLADA_ROOT}/COLLADAStreamWriter/include)
 # libraries
 find_library(COLLADABU_LIB OpenCOLLADABaseUtils HINTS ${COLLADA_ROOT}/build/lib)
 find_library(COLLADAFW_LIB OpenCOLLADAFramework HINTS ${COLLADA_ROOT}/build/lib)
 find_library(COLLADASAX_LIB OpenCOLLADASaxFrameworkLoader HINTS ${COLLADA_ROOT}/build/lib)
 find_library(COLLADASAXP_LIB GeneratedSaxParser HINTS ${COLLADA_ROOT}/build/lib)
+find_library(COLLADASW_LIB OpenCOLLADAStreamWriter HINTS ${COLLADA_ROOT}/build/lib)
+find_library(COLLADABF_LIB buffer HINTS ${COLLADA_ROOT}/build/lib)
+find_library(F2A_LIB ftoa HINTS ${COLLADA_ROOT}/build/lib)
 find_library(UTF_LIB UTF HINTS ${COLLADA_ROOT}/build/lib)
 find_library(MATHML_LIB MathMLSolver ${COLLADA_ROOT}/build/lib)
 
@@ -56,7 +62,7 @@ find_package(OGRE 1.7.3 REQUIRED)
 include_directories(SYSTEM ${COLLADAFW_INCLUDE_DIR} ${COLLADASAX_INCLUDE_DIR} ${COLLADABASE_INCLUDE_DIR} ${OGRE_INCLUDE_DIRS})
 
 if (CMAKE_COMPILER_IS_GNUCXX)
-  # for unique_ptr, at least, and possibly other things
+  # for unique_ptr, at least, and possibly other things (lambdas, move semantics)
   add_definitions(-std=c++0x -Wall)
 endif()
 
@@ -74,3 +80,6 @@ target_link_libraries(c2mesh ${APPLIBS})
 
 add_executable(cview simple_viewer.cpp)
 target_link_libraries(cview ${APPLIBS})
+
+# unit tests
+add_subdirectory(test) # comment this out if you don't want tests to be built
