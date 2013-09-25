@@ -83,6 +83,7 @@ void OgreColladaWriter::handleColorOrTexture(const COLLADAFW::EffectCommon& ce,
     }
     Ogre::TextureUnitState* tus = pass->createTextureUnitState();
     tus->setTextureName(iit->second);
+    tus->setColourOperation(Ogre::LBO_ALPHA_BLEND);
   }
 }
 
