@@ -12,6 +12,10 @@
 
 # Example build procedure (Ubuntu):
 # mkdir build;cd build;cmake -DOGRE_HOME=/usr/share/OGRE -DCOLLADA_ROOT=/home/me/opencollada-read-only/ ..;make
+# if you are using a built (but not installed) version of Ogre from source, you can do this:
+# cmake -DOGRE_BUILD=/path/to/ogre_src/build -DOGRE_SOURCE=/path/to/ogre_src -DCOLLADA_ROOT=/home/me/opencollada-read-only/ ..
+# if you are also using your own built version of Boost (must be the same used to build Ogre):
+# cmake -DOGRE_BUILD=/path/to/ogre_src/build -DOGRE_SOURCE=/path/to/ogre_src -DCOLLADA_ROOT=/home/me/opencollada-read-only/ -DBOOST_ROOT=/home/jet/boost_1_53_0 -DBoost_NO_SYSTEM_PATHS=1 ..
 
 # Requires the library OpenCollada;  there doesn't seem to be an Ubuntu package so I do this (from their web page):
 # svn checkout http://opencollada.googlecode.com/svn/trunk/ opencollada-read-only
@@ -48,18 +52,18 @@ find_package_handle_standard_args(OpenCollada REQUIRED_VARS
 # find Ogre.  Unfortunately FindOGRE.cmake is not included as part of CMake, but as part of Ogre instead,
 # so you have to know where Ogre is in order to find it...
 
-if ((DEFINED OGRE_HOME) AND (EXISTS ${OGRE_HOME}/cmake/modules))
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${OGRE_HOME}/cmake/modules)
-elseif((DEFINED $ENV{OGRE_HOME}) AND (EXISTS $ENV{OGRE_HOME}/cmake/modules))
+if ((DEFINED OGRE_HOME) AND (EXISTS ${OGRE_HOME}/CMake/Packages))
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${OGRE_HOME}/CMake/Packages ${OGRE_HOME}/CMake/Utils)
+elseif((DEFINED $ENV{OGRE_HOME}) AND (EXISTS $ENV{OGRE_HOME}/CMake/Packages))
   # Ogre's cmake script also accepts an environment variable of the same name
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{OGRE_HOME}/cmake/modules)
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{OGRE_HOME}/CMake/Packages)
 endif()
 
 find_package(Boost REQUIRED filesystem system)
 
-find_package(OGRE 1.7.3 REQUIRED)
+find_package(OGRE 1.8 REQUIRED)
 
-include_directories(SYSTEM ${COLLADAFW_INCLUDE_DIR} ${COLLADASAX_INCLUDE_DIR} ${COLLADABASE_INCLUDE_DIR} ${OGRE_INCLUDE_DIRS})
+include_directories(SYSTEM ${COLLADAFW_INCLUDE_DIR} ${COLLADASAX_INCLUDE_DIR} ${COLLADABASE_INCLUDE_DIR} ${OGRE_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 if (CMAKE_COMPILER_IS_GNUCXX)
   # for unique_ptr, at least, and possibly other things (lambdas, move semantics)

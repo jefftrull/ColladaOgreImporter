@@ -17,7 +17,7 @@
 # check that we have the writer - decoupled because we only use it in tests
 find_package_handle_standard_args(OpenCollada
                                   REQUIRED_VARS COLLADASW_INCLUDE_DIR
-                                  COLLADASW_LIB COLLADABF_LIB COLLADAF2A_LIB COLLADA2 F2A_LIB)
+                                  COLLADASW_LIB COLLADABF_LIB F2A_LIB)
 include_directories(.. SYSTEM ${COLLADASW_INCLUDE_DIR})
 
 # define data creation executables and their result files
