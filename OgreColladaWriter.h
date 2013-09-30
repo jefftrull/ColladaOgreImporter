@@ -153,6 +153,8 @@ class OgreColladaWriter : public COLLADAFW::IWriter {
 
   std::list<Ogre::MaterialPtr> m_ogreMaterials;
 
+  bool m_sketchUpWorkarounds;
+
   // private debug functions
   void node_dfs_print(const COLLADAFW::Node*, int);
   void node_dfs_dot(std::ostream& os, const COLLADAFW::Node*, int, const std::map<const COLLADAFW::Node*, int>&);

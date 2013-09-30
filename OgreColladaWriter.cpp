@@ -29,6 +29,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <algorithm>
 #include <iterator>
 #include <fstream>
+#include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -41,7 +42,8 @@ typedef COLLADAFW::FileInfo::Unit Unit;
 OgreColladaWriter::OgreColladaWriter(const Ogre::String& dir, const char* dotfn,
 				     bool checkNormals, bool calculateGeometryStats) :
   m_dir(dir), m_dotfn(dotfn),
-  m_checkNormals(checkNormals), m_calculateGeometryStats(calculateGeometryStats) {
+  m_checkNormals(checkNormals), m_calculateGeometryStats(calculateGeometryStats),
+  m_sketchUpWorkarounds(false) {
   // prepare to load textures from the specified directory
   if (boost::filesystem::exists(m_dir)) {
     LOG_DEBUG("adding directory " + m_dir + " to resources");
@@ -117,17 +119,27 @@ void OgreColladaWriter::createMaterials() {
 	  LOG_DEBUG("COLLADA WARNING: Unknown shader type for effect" + Ogre::StringConverter::toString(effid));
 	}
 
-	bool transparency = ce.getOpacity().isColor() && ((ce.getOpacity().getColor().getRed() < 1.0) ||
-							  (ce.getOpacity().getColor().getGreen() < 1.0) ||
-							  (ce.getOpacity().getColor().getBlue() < 1.0));
 	Ogre::ColourValue opacity;
-	if (transparency) {
-	  opacity = Ogre::ColourValue((Ogre::Real)ce.getOpacity().getColor().getRed(),
-				      (Ogre::Real)ce.getOpacity().getColor().getGreen(),
-				      (Ogre::Real)ce.getOpacity().getColor().getBlue(),
-				      (Ogre::Real)ce.getOpacity().getColor().getAlpha());
-	}
+        if (ce.getOpacity().isColor()) {
+          opacity = Ogre::ColourValue(
+            (Ogre::Real)ce.getOpacity().getColor().getRed(),
+            (Ogre::Real)ce.getOpacity().getColor().getGreen(),
+            (Ogre::Real)ce.getOpacity().getColor().getBlue(),
+            (Ogre::Real)ce.getOpacity().getColor().getAlpha());
+          // SketchUp prior to 7.1 inverts transparency.  this is hard to properly fix because the opacity color
+          // values are calculated using the transparent tag's type attribute, the transparent color, and
+          // the transparency value.  However for many cases I have seen, we have transparent color = 1 1 1 1,
+          // type = A_ONE (the default) and transparency = (incorrectly) 0.0000.  In that case using opacity
+          // 1 1 1 1 (instead of calculated 0 0 0 0) is correct.
+          if (m_sketchUpWorkarounds &&
+              (opacity.r == 0.0) && (opacity.g == 0.0) && (opacity.b == 0.0) && (opacity.a == 0.0)) {
+            opacity = Ogre::ColourValue::White;
+          }
+        }
 
+	bool transparency = ce.getOpacity().isColor() && ((opacity.r < 1.0) ||
+							  (opacity.g < 1.0) ||
+							  (opacity.b < 1.0));
 	handleColorOrTexture(ce, ce.getAmbient(), pass, &Ogre::Pass::setAmbient, Ogre::TVC_AMBIENT);
 	handleColorOrTexture(ce, ce.getDiffuse(), pass, &Ogre::Pass::setDiffuse, Ogre::TVC_DIFFUSE);
 	handleColorOrTexture(ce, ce.getSpecular(), pass, &Ogre::Pass::setSpecular, Ogre::TVC_SPECULAR);
@@ -179,6 +191,22 @@ bool OgreColladaWriter::writeGlobalAsset(const FileInfo* fi) {
   double scale = fi->getUnit().getLinearUnitMeter();
   m_ColladaScale = Ogre::Vector3(scale, scale, scale);
 
+  // Look for authoring tool to set up quirks for bugs
+  const COLLADAFW::FileInfo::ValuePairPointerArray& values = fi->getValuePairArray();
+  for (size_t i = 0; i < values.getCount(); ++i) {
+    if (values[i]->first == "authoring_tool") {
+      boost::regex sketchup_regex("Google SketchUp (\\d+)\\.(\\d+)(\\.\\d+)?");
+      boost::smatch comps;
+      if (boost::regex_match(values[i]->second, comps, sketchup_regex)) {
+        int maj = std::stoi(comps[1]);
+        int min = std::stoi(comps[2]);
+        if ((maj < 7) || ((maj == 7) && (min < 1))) {
+          // Prior to version 7.1 SketchUp had a number of Collada export bugs
+          m_sketchUpWorkarounds = true;
+        }
+      }
+    }
+  }
   return true;
 }
 
@@ -663,4 +691,3 @@ void OgreColladaWriter::node_dfs_geocheck(const COLLADAFW::Node* n) {
     node_dfs_geocheck(cnodes[i]);
   }
 }
-
