@@ -18,7 +18,8 @@
 find_package_handle_standard_args(OpenCollada
                                   REQUIRED_VARS COLLADASW_INCLUDE_DIR
                                   COLLADASW_LIB COLLADABF_LIB F2A_LIB)
-include_directories(.. SYSTEM ${COLLADASW_INCLUDE_DIR})
+include_directories(..)
+include_directories(SYSTEM ${COLLADASW_INCLUDE_DIR})
 
 # define data creation executables and their result files
 set(CREATE_LIBS ${COLLADASW_LIB} ${COLLADABF_LIB} ${UTF_LIB} ${F2A_LIB} ${COLLADABU_LIB} pcre)
