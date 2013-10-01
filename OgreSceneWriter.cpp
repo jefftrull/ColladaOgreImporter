@@ -15,6 +15,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <boost/lexical_cast.hpp>
 
 #include <COLLADAFWMatrix.h>
+#include <COLLADAFWLookat.h>
 #include <OgreManualObject.h>
 #include <OgreMatrix4.h>
 #include <OgreEntity.h>
@@ -150,6 +151,48 @@ void OgreSceneWriter::finish() {
   }
 }
 
+Ogre::Matrix4 OgreSceneWriter::computeTransformation(const COLLADAFW::Transformation* trans) {
+  if (trans->getTransformationType() == COLLADAFW::Transformation::LOOKAT) {
+    const COLLADAFW::Lookat& l = dynamic_cast<const COLLADAFW::Lookat&>(*trans);
+    const COLLADABU::Math::Vector3& eye = l.getEyePosition();
+    const COLLADABU::Math::Vector3& center = l.getInterestPointPosition();
+    const COLLADABU::Math::Vector3& up = l.getUpAxisDirection();
+
+    // turn these three vectors into an Ogre transformation matrix per recipe found in numerous places online:
+    Ogre::Vector3 eyev(eye.x, eye.y, eye.z);
+    Ogre::Vector3 centerv(center.x, center.y, center.z);
+    Ogre::Vector3 upv(up.x, up.y, up.z);
+    LOG_DEBUG("Got a LOOKAT transformation with eye position " + Ogre::StringConverter::toString(eyev) +
+              ", object position " + Ogre::StringConverter::toString(centerv) +
+              ", and up vector " + Ogre::StringConverter::toString(upv));
+
+    Ogre::Vector3 forwardv = (centerv - eyev).normalisedCopy();
+    Ogre::Vector3 sidev = forwardv.crossProduct(upv);
+    upv = sidev.crossProduct(forwardv);
+    LOG_DEBUG("calculated forward vector " + Ogre::StringConverter::toString(forwardv) +
+              ", side vector " + Ogre::StringConverter::toString(sidev) +
+              ", resultant up vector " + Ogre::StringConverter::toString(upv));
+      
+    // create an Ogre matrix from this data
+    return Ogre::Matrix4(sidev.x, upv.x, -forwardv.x, 0.0,
+                         sidev.y, upv.y, -forwardv.y, 0.0,
+                         sidev.z, upv.z, -forwardv.z, 0.0,
+                         0.0,     0.0,    0.0,        1.0);
+
+  } else if (trans->getTransformationType() == COLLADAFW::Transformation::MATRIX) {
+    const COLLADAFW::Matrix& m = dynamic_cast<const COLLADAFW::Matrix&>(*trans);
+    const COLLADABU::Math::Matrix4& mm = m.getMatrix();
+    // create an Ogre matrix from this data
+    return Ogre::Matrix4(mm.getElement(0, 0), mm.getElement(0, 1), mm.getElement(0, 2), mm.getElement(0, 3),
+                         mm.getElement(1, 0), mm.getElement(1, 1), mm.getElement(1, 2), mm.getElement(1, 3),
+                         mm.getElement(2, 0), mm.getElement(2, 1), mm.getElement(2, 2), mm.getElement(2, 3),
+                         mm.getElement(3, 0), mm.getElement(3, 1), mm.getElement(3, 2), mm.getElement(3, 3));
+  } else {
+    LOG_DEBUG("COLLADA WARNING: Scene node has non-matrix/lookat transformation - ignoring");
+    return Ogre::Matrix4::IDENTITY;
+  }
+}
+
 bool OgreSceneWriter::createSceneDFS(const COLLADAFW::Node* cn, Ogre::SceneNode* sn, const Ogre::String& prefix) {
   // General algorithm (assumes Ogre scene node is already created):
   // set transformation
@@ -162,29 +205,20 @@ bool OgreSceneWriter::createSceneDFS(const COLLADAFW::Node* cn, Ogre::SceneNode*
   if (tarr.getCount() > 1) {
     LOG_DEBUG("COLLADA WARNING: Scene node has " + Ogre::StringConverter::toString(tarr.getCount()) + " transformations - we only handle 0 or 1");
   } else if (tarr.getCount() == 1) {
-    if (tarr[0]->getTransformationType() != COLLADAFW::Transformation::MATRIX) {
-      LOG_DEBUG("COLLADA WARNING: Scene node has non-matrix transformation - ignoring");
-    } else {
-      const COLLADAFW::Matrix& m = dynamic_cast<const COLLADAFW::Matrix&>(*tarr[0]);
-      const COLLADABU::Math::Matrix4& mm = m.getMatrix();
-      // create an Ogre matrix from this data
-      Ogre::Matrix4 om(mm.getElement(0, 0), mm.getElement(0, 1), mm.getElement(0, 2), mm.getElement(0, 3),
-		       mm.getElement(1, 0), mm.getElement(1, 1), mm.getElement(1, 2), mm.getElement(1, 3),
-		       mm.getElement(2, 0), mm.getElement(2, 1), mm.getElement(2, 2), mm.getElement(2, 3),
-		       mm.getElement(3, 0), mm.getElement(3, 1), mm.getElement(3, 2), mm.getElement(3, 3));
-      // have to split this up into components b/c Ogre::SceneNode has no direct way to set 4x4 transform
-      Ogre::Vector3 position, scale;
-      Ogre::Quaternion orientation;
-      om.decomposition(position, scale, orientation);
+    Ogre::Matrix4 xform = computeTransformation(tarr[0]);
 
-      if (orientation.isNaN()) {
-	LOG_DEBUG("COLLADA WARNING: the orientation appears to be gibberish!");
-      } else {
-	sn->setOrientation(orientation);
-      }
-      sn->setPosition(position);
-      sn->setScale(scale);
+    // have to split this up into components b/c Ogre::SceneNode has no direct way to set 4x4 transform
+    Ogre::Vector3 position, scale;
+    Ogre::Quaternion orientation;
+    xform.decomposition(position, scale, orientation);
+
+    if (orientation.isNaN()) {
+      LOG_DEBUG("COLLADA WARNING: the orientation appears to be gibberish!");
+    } else {
+      sn->setOrientation(orientation);
     }
+    sn->setPosition(position);
+    sn->setScale(scale);
   }
 
   // collect the different types of child nodes
