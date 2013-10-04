@@ -103,6 +103,7 @@ void OgreColladaWriter::createMaterials() {
       Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(matname, "General");      
       // for now, one technique and one pass.  Get the ones supplied automatically upon Material creation:
       Ogre::Pass* pass = mat->getTechnique(0)->getPass(0);
+      pass->setCullingMode(Ogre::CULL_NONE);
       for (int i = 0, count = effit->second.size(); i < count; ++i) {
 	if (i > 0) {
 	  pass = mat->getTechnique(0)->createPass();   // need a new pass for each effect
