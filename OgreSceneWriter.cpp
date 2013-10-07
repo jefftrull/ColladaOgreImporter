@@ -158,6 +158,11 @@ Ogre::Matrix4 OgreSceneWriter::computeTransformation(const COLLADAFW::Transforma
     const COLLADABU::Math::Vector3& center = l.getInterestPointPosition();
     const COLLADABU::Math::Vector3& up = l.getUpAxisDirection();
 
+    // Untransformed cameras look along the -Z axis and are positioned at the origin
+    // We need to generate a transformation that positions them at the "eye" position,
+    // with rotation changed from direction = (0, 0, -1) upaxis = (0, 1, 0) to
+    // direction = (center - eye) and upaxis = (up)
+
     // turn these three vectors into an Ogre transformation matrix per recipe found in numerous places online:
     Ogre::Vector3 eyev(eye.x, eye.y, eye.z);
     Ogre::Vector3 centerv(center.x, center.y, center.z);
@@ -174,10 +179,15 @@ Ogre::Matrix4 OgreSceneWriter::computeTransformation(const COLLADAFW::Transforma
               ", resultant up vector " + Ogre::StringConverter::toString(upv));
       
     // create an Ogre matrix from this data
-    return Ogre::Matrix4(sidev.x, upv.x, -forwardv.x, 0.0,
-                         sidev.y, upv.y, -forwardv.y, 0.0,
-                         sidev.z, upv.z, -forwardv.z, 0.0,
+    // online sources describe how to reorient the entire scene to be displayed through the
+    // camera;  we are doing exactly the reverse, which is why this is a bit different:
+    return Ogre::Matrix4(sidev.x, upv.x, -forwardv.x, eye.x,
+                         sidev.y, upv.y, -forwardv.y, eye.y,
+                         sidev.z, upv.z, -forwardv.z, eye.z,
                          0.0,     0.0,    0.0,        1.0);
+
+    // cross-check: original camera "forward" and "up" vectors (0, 0, -1) and (0, 1, 0)
+    // produce the right values when transformed by this matrix
 
   } else if (trans->getTransformationType() == COLLADAFW::Transformation::MATRIX) {
     const COLLADAFW::Matrix& m = dynamic_cast<const COLLADAFW::Matrix&>(*trans);
