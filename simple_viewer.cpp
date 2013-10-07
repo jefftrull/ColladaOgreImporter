@@ -96,8 +96,45 @@ private:
 #include <boost/filesystem.hpp>
 
 #include <COLLADAFWRoot.h>
-
 #include "OgreSceneWriter.h"
+
+// utility function for setting up camera in the absence of specific instructions
+// recursively calculates the bounding box of a SceneNode including transformations
+Ogre::AxisAlignedBox worldExtent(Ogre::SceneNode const* sn) {
+  // sum the bounding boxes of the attached objects
+  auto bbox = std::accumulate(sn->getAttachedObjectIterator().begin(),
+                              sn->getAttachedObjectIterator().end(),
+                              Ogre::AxisAlignedBox(),
+                              [](Ogre::AxisAlignedBox box,
+                                 Ogre::SceneNode::ObjectIterator::PairType const& obj) {
+                                 if (obj.second->getMovableType() != "Camera") {
+                                    // cameras are not real for the purpose of computing extent
+                                    box.merge(obj.second->getBoundingBox());
+                                 }
+                                return box;
+                              });
+
+  // sum bounding boxes of downstream objects
+  bbox = std::accumulate(sn->getChildIterator().begin(),
+                         sn->getChildIterator().end(),
+                         bbox,
+                         [](Ogre::AxisAlignedBox box,
+                            Ogre::SceneNode::ChildNodeIterator::PairType const& obj) {
+                           Ogre::SceneNode const * child_node = dynamic_cast<Ogre::SceneNode*>(obj.second);
+                           Ogre::AxisAlignedBox child_box = worldExtent(child_node);
+                           if (!child_box.isNull()) {
+                             Ogre::Matrix4 child_xform;
+                             child_xform.makeTransform(child_node->getPosition(),
+                                                       child_node->getScale(),
+                                                       child_node->getOrientation());
+                             child_box.transform(child_xform);
+                           }
+                           box.merge(child_box);
+                           return box;
+                         });
+                         
+  return bbox;
+}
 
 int main(int argc, char **argv) {
   // Expects just one argument: path to .dae file
@@ -128,6 +165,8 @@ int main(int argc, char **argv) {
   // camera looks back along -Z into screen
   viewer.getCamera()->lookAt(Ogre::Vector3(0,0,-100));
   viewer.getCamera()->setNearClipDistance(5);
+  viewer.getCamera()->setFarClipDistance(1000);
+
 
   // set up some lights to illuminate loaded object
   Ogre::ColourValue dim(0.25, 0.25, 0.25);
@@ -160,6 +199,12 @@ int main(int argc, char **argv) {
   Ogre::Camera* colladaCamera = writer.getCamera();
   if (colladaCamera) {
     viewer.setCamera(colladaCamera);
+  } else {
+    // try to look at the center of the loaded objects, wherever they may be
+    // calculate the bounding box of the scene
+    auto bbox = worldExtent(viewer.getSceneManager()->getRootSceneNode());
+    viewer.getCamera()->lookAt(bbox.getCenter());
+    dynamic_cast<Ogre::SceneNode*>(viewer.getSceneManager()->getRootSceneNode()->getChild("Top"))->showBoundingBox(true);
   }
 
   viewer.go();
