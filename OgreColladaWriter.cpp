@@ -51,7 +51,7 @@ typedef COLLADAFW::FileInfo::Unit Unit;
 // copied out of OgreCollada
 #define LOG_DEBUG(msg) { Ogre::LogManager::getSingleton().logMessage( Ogre::String((msg)) ); }
 
-OgreColladaWriter::OgreColladaWriter(const Ogre::String& dir, const char* dotfn,
+OgreCollada::Writer::Writer(const Ogre::String& dir, const char* dotfn,
 				     bool checkNormals, bool calculateGeometryStats) :
   m_dir(dir), m_dotfn(dotfn),
   m_checkNormals(checkNormals), m_calculateGeometryStats(calculateGeometryStats),
@@ -65,15 +65,15 @@ OgreColladaWriter::OgreColladaWriter(const Ogre::String& dir, const char* dotfn,
   }
 }
 
-OgreColladaWriter::~OgreColladaWriter() {}
+OgreCollada::Writer::~Writer() {}
 
-void OgreColladaWriter::cancel(const COLLADAFW::String&) {}
+void OgreCollada::Writer::cancel(const COLLADAFW::String&) {}
 
-void OgreColladaWriter::start() {
+void OgreCollada::Writer::start() {
 }
 
 // each type of color (ambient, specular, diffuse, etc.) gets handled very similarly
-void OgreColladaWriter::handleColorOrTexture(const COLLADAFW::EffectCommon& ce,
+void OgreCollada::Writer::handleColorOrTexture(const COLLADAFW::EffectCommon& ce,
 					   const COLLADAFW::ColorOrTexture& ct,
 					   Ogre::Pass* pass,
 					   ColorSetter setColor,
@@ -101,7 +101,7 @@ void OgreColladaWriter::handleColorOrTexture(const COLLADAFW::EffectCommon& ce,
   }
 }
 
-void OgreColladaWriter::createMaterials() {
+void OgreCollada::Writer::createMaterials() {
   // At this point we have both the materials and their referenced effects.  Let's create them in Ogre so we can assign
   // them to submeshes when we instantiate the scene graph
   for (MaterialMapIterator matit = m_materials.begin(); matit != m_materials.end(); ++matit) {
@@ -192,11 +192,11 @@ void OgreColladaWriter::createMaterials() {
   }
 }
 
-void OgreColladaWriter::disableCulling(COLLADAFW::UniqueId const& uid) {
+void OgreCollada::Writer::disableCulling(COLLADAFW::UniqueId const& uid) {
   m_unculledEffects.push_back(uid);
 }
 
-bool OgreColladaWriter::writeGlobalAsset(const FileInfo* fi) {
+bool OgreCollada::Writer::writeGlobalAsset(const FileInfo* fi) {
   enum FileInfo::UpAxisType up = fi->getUpAxisType();
   // set transform of entire imported scene to match Ogre (Y-up)
   if (up == FileInfo::X_UP) {
@@ -230,7 +230,7 @@ bool OgreColladaWriter::writeGlobalAsset(const FileInfo* fi) {
   return true;
 }
 
-bool OgreColladaWriter::writeScene(const COLLADAFW::Scene* scene) {
+bool OgreCollada::Writer::writeScene(const COLLADAFW::Scene* scene) {
   return true;
 }
 
@@ -240,7 +240,7 @@ static void do_indent(int level) {
   }
 }
 
-bool OgreColladaWriter::writeLibraryNodes(const COLLADAFW::LibraryNodes* lnodes) {
+bool OgreCollada::Writer::writeLibraryNodes(const COLLADAFW::LibraryNodes* lnodes) {
   for (int i = 0, count = lnodes->getNodes().getCount(); i < count; ++i) {
     const COLLADAFW::Node* n = lnodes->getNodes()[i];
     // record this name and unique ID
@@ -255,7 +255,7 @@ bool OgreColladaWriter::writeLibraryNodes(const COLLADAFW::LibraryNodes* lnodes)
 
   return true;
 }
-bool OgreColladaWriter::addGeometry(const COLLADAFW::Geometry* g,         // input geometry from Collada
+bool OgreCollada::Writer::addGeometry(const COLLADAFW::Geometry* g,         // input geometry from Collada
 				    Ogre::ManualObject* manobj,           // object under construction
 				    const Ogre::Matrix4& xform,           // transform within the object
 				    const COLLADAFW::MaterialBindingArray* mba) {
@@ -500,14 +500,14 @@ bool OgreColladaWriter::addGeometry(const COLLADAFW::Geometry* g,         // inp
   return valid_submesh;
 }
 
-bool OgreColladaWriter::writeMaterial(const COLLADAFW::Material* m) {
+bool OgreCollada::Writer::writeMaterial(const COLLADAFW::Material* m) {
 
   m_materials.insert(std::make_pair(m->getUniqueId(), std::make_pair(m->getName(), m->getInstantiatedEffect())));
 
   return true;
 }
 
-bool OgreColladaWriter::writeEffect(const COLLADAFW::Effect* e) {
+bool OgreCollada::Writer::writeEffect(const COLLADAFW::Effect* e) {
   COLLADAFW::Color c = e->getStandardColor();
   for (int i = 0, count = e->getCommonEffects().getCount(); i < count; ++i) {
     const COLLADAFW::EffectCommon* ce = e->getCommonEffects()[i];
@@ -517,10 +517,10 @@ bool OgreColladaWriter::writeEffect(const COLLADAFW::Effect* e) {
 
   return true;
 }
-bool OgreColladaWriter::writeCamera(const COLLADAFW::Camera*) {
+bool OgreCollada::Writer::writeCamera(const COLLADAFW::Camera*) {
   return true;
 }
-bool OgreColladaWriter::writeImage(const COLLADAFW::Image* i) {
+bool OgreCollada::Writer::writeImage(const COLLADAFW::Image* i) {
   // these are basically texture jpegs... they contain a file path
   if (i->getSourceType() == COLLADAFW::Image::SOURCE_TYPE_URI) {
     Ogre::String image_rel_path = COLLADABU::URI::uriDecode(i->getImageURI().getURIString());
@@ -535,7 +535,7 @@ bool OgreColladaWriter::writeImage(const COLLADAFW::Image* i) {
       m_images.insert(std::make_pair(i->getUniqueId(), texture->getName()));
     }
   } else {
-    LOG_DEBUG("OgreColladaWriter::writeImage called on OID " + i->getOriginalId() + " uniqueid " + Ogre::StringConverter::toString(i->getUniqueId()) + " name " + i->getName() + " source type ");
+    LOG_DEBUG("OgreCollada::Writer::writeImage called on OID " + i->getOriginalId() + " uniqueid " + Ogre::StringConverter::toString(i->getUniqueId()) + " name " + i->getName() + " source type ");
     if (i->getSourceType() == COLLADAFW::Image::SOURCE_TYPE_DATA) {
       LOG_DEBUG("DATA");
     } else {
@@ -545,29 +545,29 @@ bool OgreColladaWriter::writeImage(const COLLADAFW::Image* i) {
   }
   return true;
 }
-bool OgreColladaWriter::writeLight(const COLLADAFW::Light*) {
+bool OgreCollada::Writer::writeLight(const COLLADAFW::Light*) {
   return true;
 }
-bool OgreColladaWriter::writeAnimation(const COLLADAFW::Animation*) {
+bool OgreCollada::Writer::writeAnimation(const COLLADAFW::Animation*) {
   return true;
 }
-bool OgreColladaWriter::writeAnimationList(const COLLADAFW::AnimationList*) {
+bool OgreCollada::Writer::writeAnimationList(const COLLADAFW::AnimationList*) {
   return true;
 }
-bool OgreColladaWriter::writeSkinControllerData(const COLLADAFW::SkinControllerData*) {
+bool OgreCollada::Writer::writeSkinControllerData(const COLLADAFW::SkinControllerData*) {
   return true;
 }
-bool OgreColladaWriter::writeController(const COLLADAFW::Controller*) {
+bool OgreCollada::Writer::writeController(const COLLADAFW::Controller*) {
   return true;
 }
-bool OgreColladaWriter::writeFormulas(const COLLADAFW::Formulas*) {
+bool OgreCollada::Writer::writeFormulas(const COLLADAFW::Formulas*) {
   return true;
 }
-bool OgreColladaWriter::writeKinematicsScene(const COLLADAFW::KinematicsScene*) {
+bool OgreCollada::Writer::writeKinematicsScene(const COLLADAFW::KinematicsScene*) {
   return true;
 }
 
-bool OgreColladaWriter::writeVisualScene(const COLLADAFW::VisualScene* vscene) {
+bool OgreCollada::Writer::writeVisualScene(const COLLADAFW::VisualScene* vscene) {
   // store those root nodes for later processing
   for (int i = 0, count = vscene->getRootNodes().getCount(); i < count; ++i) {
     m_vsRootNodes.push_back(vscene->getRootNodes()[i]);
@@ -578,7 +578,7 @@ bool OgreColladaWriter::writeVisualScene(const COLLADAFW::VisualScene* vscene) {
 
 // utility/debug functions
 
-void OgreColladaWriter::node_dfs_print(const COLLADAFW::Node* n, int level) {
+void OgreCollada::Writer::node_dfs_print(const COLLADAFW::Node* n, int level) {
   do_indent(level);
   LOG_DEBUG("OID " + n->getOriginalId() + " UniqueID " + Ogre::StringConverter::toString(n->getUniqueId()) + " Name " + n->getName());
   if (n->getChildNodes().getCount()) {
@@ -607,7 +607,7 @@ void OgreColladaWriter::node_dfs_print(const COLLADAFW::Node* n, int level) {
   }
 }
 
-void OgreColladaWriter::dump_as_dot(std::ostream& os) {
+void OgreCollada::Writer::dump_as_dot(std::ostream& os) {
   // dump instance hierarchy as DOT
   os << "digraph OgreScene {\n";
   os << "ratio=0.1\n";   // based on messing with the result
@@ -642,7 +642,7 @@ void OgreColladaWriter::dump_as_dot(std::ostream& os) {
 }
 
 // just the instance hierarchy for now.
-void OgreColladaWriter::node_dfs_dot(std::ostream& os, const COLLADAFW::Node* n,
+void OgreCollada::Writer::node_dfs_dot(std::ostream& os, const COLLADAFW::Node* n,
 				   int parentid, const std::map<const COLLADAFW::Node*, int>& nodeids) {
   // if this node has instance nodes, they are all children of this node's parent
   const COLLADAFW::InstanceNodePointerArray& inodes = n->getInstanceNodes();
@@ -670,7 +670,7 @@ void OgreColladaWriter::node_dfs_dot(std::ostream& os, const COLLADAFW::Node* n,
 
 // traverse node hierarchy from either 1) root node or 2) some instance root
 // and make sure we have geometries stored as meshes
-void OgreColladaWriter::node_dfs_geocheck(const COLLADAFW::Node* n) {
+void OgreCollada::Writer::node_dfs_geocheck(const COLLADAFW::Node* n) {
   // check instantiated geometries hanging off this node
   const COLLADAFW::InstanceGeometryPointerArray& gnodes = n->getInstanceGeometries();
   for (int i = 0, count = gnodes.getCount(); i < count; ++i) {

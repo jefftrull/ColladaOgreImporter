@@ -27,19 +27,19 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include "OgreSceneWriter.h"
 
-OgreSceneWriter::OgreSceneWriter(Ogre::SceneManager* mgr,
-				 Ogre::SceneNode* topnode,
-				 const Ogre::String& dir) : OgreColladaWriter(dir, 0, false, false),
-							    m_topNode(topnode), m_sceneMgr(mgr) {}
+OgreCollada::SceneWriter::SceneWriter(Ogre::SceneManager* mgr,
+                                      Ogre::SceneNode* topnode,
+                                      const Ogre::String& dir) : Writer(dir, 0, false, false),
+                                                                 m_topNode(topnode), m_sceneMgr(mgr) {}
 
-OgreSceneWriter::~OgreSceneWriter() {}
+OgreCollada::SceneWriter::~SceneWriter() {}
 
-bool OgreSceneWriter::writeCamera(const COLLADAFW::Camera* camera) {
+bool OgreCollada::SceneWriter::writeCamera(const COLLADAFW::Camera* camera) {
   m_cameras.insert(std::make_pair(camera->getUniqueId(), *camera));
   return true;
 }
 
-bool OgreSceneWriter::writeGeometry(const COLLADAFW::Geometry* g) {
+bool OgreCollada::SceneWriter::writeGeometry(const COLLADAFW::Geometry* g) {
 
   if (m_calculateGeometryStats) {
     // remember this for later use
@@ -109,7 +109,7 @@ bool OgreSceneWriter::writeGeometry(const COLLADAFW::Geometry* g) {
   return true;
 }
 
-void OgreSceneWriter::finish() {
+void OgreCollada::SceneWriter::finish() {
   // this is the only function we're guaranteed will be called after all the others...
   // so do everything from here
 
@@ -160,7 +160,7 @@ void OgreSceneWriter::finish() {
   }
 }
 
-Ogre::Matrix4 OgreSceneWriter::computeTransformation(const COLLADAFW::Transformation* trans) {
+Ogre::Matrix4 OgreCollada::SceneWriter::computeTransformation(const COLLADAFW::Transformation* trans) {
   if (trans->getTransformationType() == COLLADAFW::Transformation::LOOKAT) {
     const COLLADAFW::Lookat& l = dynamic_cast<const COLLADAFW::Lookat&>(*trans);
     const COLLADABU::Math::Vector3& eye = l.getEyePosition();
@@ -212,7 +212,7 @@ Ogre::Matrix4 OgreSceneWriter::computeTransformation(const COLLADAFW::Transforma
   }
 }
 
-bool OgreSceneWriter::createSceneDFS(const COLLADAFW::Node* cn, Ogre::SceneNode* sn, const Ogre::String& prefix) {
+bool OgreCollada::SceneWriter::createSceneDFS(const COLLADAFW::Node* cn, Ogre::SceneNode* sn, const Ogre::String& prefix) {
   // General algorithm (assumes Ogre scene node is already created):
   // set transformation
   // for each instance node, build copy of its subtree recursively, with uniquified name
@@ -363,7 +363,7 @@ bool OgreSceneWriter::createSceneDFS(const COLLADAFW::Node* cn, Ogre::SceneNode*
 }
 
 // instantiate library node at the given Ogre SceneNode, assuming transformation is set for you
-bool OgreSceneWriter::processLibraryInstance(const COLLADAFW::InstanceNode* inode,
+bool OgreCollada::SceneWriter::processLibraryInstance(const COLLADAFW::InstanceNode* inode,
 					     Ogre::SceneNode* lsn, const Ogre::String& prefix) {
   // an instantiation of an entire subtree
   // follow the hierarchy (the regular node and its subtree) associated with this instance node by looking it up in the library nodes
@@ -391,7 +391,7 @@ bool OgreSceneWriter::processLibraryInstance(const COLLADAFW::InstanceNode* inod
  return true;
 }
 
-Ogre::Camera* OgreSceneWriter::getCamera() {
+Ogre::Camera* OgreCollada::SceneWriter::getCamera() {
    if (!m_instantiatedCameras.empty()) {
       return m_instantiatedCameras[0];
    }

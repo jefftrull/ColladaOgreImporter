@@ -184,11 +184,11 @@ int main(int argc, char **argv) {
   overhead_light->setSpecularColour(dim);
   overhead_light->setDirection(Ogre::Vector3(0, -1, 0));
 
-  OgreSceneWriter writer(viewer.getSceneManager(),
-			 viewer.getSceneManager()->getRootSceneNode()->createChildSceneNode("Top"),
-			 dir);
+  OgreCollada::SceneWriter writer(viewer.getSceneManager(),
+                                  viewer.getSceneManager()->getRootSceneNode()->createChildSceneNode("Top"),
+                                  dir);
 
-  OgreColladaSaxLoader loader;
+  OgreCollada::SaxLoader loader;
   COLLADAFW::Root root(&loader, &writer);
   if (!root.loadDocument(fname)) {
     std::cerr << "load document failed\n";

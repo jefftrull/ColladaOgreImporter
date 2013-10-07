@@ -19,17 +19,17 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <OgreLogManager.h>
 #include "OgreMeshWriter.h"
 
-OgreMeshWriter::OgreMeshWriter(const Ogre::String& dir) : OgreColladaWriter(dir, 0, false, false),
-							  m_manobj(0)
+OgreCollada::MeshWriter::MeshWriter(const Ogre::String& dir) : Writer(dir, 0, false, false),
+                                                               m_manobj(0)
 {
   // create proxy writer objects we will supply to the Collada loader
   m_pass1Writer = new OgreMeshDispatchPass1(this);
   m_pass2Writer = new OgreMeshDispatchPass2(this);
 }
 
-OgreMeshWriter::~OgreMeshWriter() {}
+OgreCollada::MeshWriter::~MeshWriter() {}
 
-bool OgreMeshWriter::writeGeometry(const COLLADAFW::Geometry* g) {
+bool OgreCollada::MeshWriter::writeGeometry(const COLLADAFW::Geometry* g) {
   // find where this geometry gets instantiated
   GeoUsageMapIter mit = m_geometryUsage.find(g->getUniqueId());
   if (mit == m_geometryUsage.end()) {
@@ -44,7 +44,7 @@ bool OgreMeshWriter::writeGeometry(const COLLADAFW::Geometry* g) {
   return true;
 }
 
-void OgreMeshWriter::pass1Finish() {
+void OgreCollada::MeshWriter::pass1Finish() {
   // build scene graph and record transformations for each geometry instantiation
 
   // determine initial transformation.  Use Collada matrices etc. to avoid repeated reconversions to Ogre
@@ -62,7 +62,7 @@ void OgreMeshWriter::pass1Finish() {
   m_manobj = new Ogre::ManualObject(m_vsRootNodes[0]->getName() + "_mobj");
 }
 
-void OgreMeshWriter::finish() {
+void OgreCollada::MeshWriter::finish() {
   createMaterials();
 
   // close manualobject and convert to mesh
@@ -73,7 +73,7 @@ void OgreMeshWriter::finish() {
 
 // recursively build a table of geometry instances with ID and transform
 // to be accessed when geometries are read in the second pass
-bool OgreMeshWriter::createSceneDFS(const COLLADAFW::Node* cn,             // node to instantiate
+bool OgreCollada::MeshWriter::createSceneDFS(const COLLADAFW::Node* cn,             // node to instantiate
 				    const COLLADABU::Math::Matrix4& xform) // accumulated transform
 {
   // apply this node's transformation matrix to the one inherited from its parent

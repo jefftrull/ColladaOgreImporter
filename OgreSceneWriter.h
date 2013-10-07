@@ -20,12 +20,14 @@ namespace COLLADAFW {
    class Geometry;
 }
 
-class OgreSceneWriter : public OgreColladaWriter {
+namespace OgreCollada {
+
+class SceneWriter : public Writer {
  public:
-  OgreSceneWriter(Ogre::SceneManager*,  // the SceneManager in which to create SceneNodes
+  SceneWriter(Ogre::SceneManager*,  // the SceneManager in which to create SceneNodes
 		  Ogre::SceneNode*,     // the scene node under which we instantiate the loaded data
 		  const Ogre::String&); // dir to find materials in
-  ~OgreSceneWriter();
+  ~SceneWriter();
   virtual bool writeCamera(const COLLADAFW::Camera*);
   virtual bool writeGeometry(const COLLADAFW::Geometry*);
   virtual void finish();
@@ -34,9 +36,9 @@ class OgreSceneWriter : public OgreColladaWriter {
 
  private:
   // hide default xtor and compiler-generated copy and assignment operators
-  OgreSceneWriter();
-  OgreSceneWriter( const OgreSceneWriter& pre );
-  const OgreSceneWriter& operator= ( const OgreSceneWriter& pre );
+  SceneWriter();
+  SceneWriter( const SceneWriter& pre );
+  const SceneWriter& operator= ( const SceneWriter& pre );
 
   std::map<COLLADAFW::UniqueId, COLLADAFW::Camera> m_cameras;
 
@@ -50,3 +52,5 @@ class OgreSceneWriter : public OgreColladaWriter {
 
   std::vector<Ogre::Camera*> m_instantiatedCameras;
 };
+
+} // end namespace OgreCollada

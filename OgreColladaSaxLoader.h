@@ -18,16 +18,19 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 namespace COLLADAFW {
    class Effect;
 }
-class OgreColladaWriter;
 
-class OgreColladaSaxLoader : public COLLADASaxFWL::Loader {
+namespace OgreCollada {
+
+class Writer;
+
+class SaxLoader : public COLLADASaxFWL::Loader {
   // private class implementing the callback handler interface
-  class OgreColladaExtraDataHandler: public COLLADASaxFWL::IExtraDataCallbackHandler {
+  class ExtraDataHandler: public COLLADASaxFWL::IExtraDataCallbackHandler {
     typedef GeneratedSaxParser::ParserChar ParserChar;
     typedef GeneratedSaxParser::StringHash StringHash;
   public:
-    OgreColladaExtraDataHandler();
-    ~OgreColladaExtraDataHandler();
+    ExtraDataHandler();
+    ~ExtraDataHandler();
     virtual bool elementBegin( const ParserChar* elementName, const GeneratedSaxParser::xmlChar** attributes);
     virtual bool elementEnd(const ParserChar* elementName );
     virtual bool textData(const ParserChar* text, size_t textLength);
@@ -39,20 +42,22 @@ class OgreColladaSaxLoader : public COLLADASaxFWL::Loader {
       const COLLADAFW::UniqueId& uniqueId,
       COLLADAFW::Object* object );
 
-    void setWriter(OgreColladaWriter* writer);
+    void setWriter(Writer* writer);
 
   private:
     COLLADAFW::Effect* m_latestEffect;
-    OgreColladaWriter* m_writer;
+    Writer* m_writer;
   };
 
-  OgreColladaExtraDataHandler m_extraDataHandler;
+  ExtraDataHandler m_extraDataHandler;
 
 public:
-  OgreColladaSaxLoader();
-  ~OgreColladaSaxLoader();
+  SaxLoader();
+  ~SaxLoader();
   // override loadDocument methods so we can access "extra" params from the writer
   virtual bool loadDocument(const COLLADAFW::String& fileName, COLLADAFW::IWriter* writer);
   virtual bool loadDocument(const COLLADAFW::String& uri, const char* buffer, int length,
                             COLLADAFW::IWriter* writer);
 };
+
+}  // end namespace OgreCollada

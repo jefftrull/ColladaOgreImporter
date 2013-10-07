@@ -32,10 +32,12 @@ namespace COLLADAFW {
 
 #define LOG_DEBUG(msg) { Ogre::LogManager::getSingleton().logMessage( Ogre::String((msg)) ); }
 
-class OgreColladaWriter : public COLLADAFW::IWriter {
+namespace OgreCollada {
+
+class Writer : public COLLADAFW::IWriter {
  public:
   // no public xtor, child classes to supply their own
-  ~OgreColladaWriter();
+  ~Writer();
 
   // declare implementations for parent class's virtual functions
   virtual void cancel(const COLLADAFW::String&);
@@ -71,7 +73,7 @@ class OgreColladaWriter : public COLLADAFW::IWriter {
 
  protected:
   // parent class members aren't accessible to child constructors, so provide this xtor for children to use:
-  OgreColladaWriter(const Ogre::String&, const char*, bool, bool);
+  Writer(const Ogre::String&, const char*, bool, bool);
 
   // geometry statistics and debug tools are useful to child classes
   const Ogre::String& m_dir;   // directory relative to which we can find texture images etc.
@@ -144,9 +146,9 @@ class OgreColladaWriter : public COLLADAFW::IWriter {
 
  private:
   // hide default xtor and compiler-generated copy and assignment operators
-  OgreColladaWriter();
-  OgreColladaWriter( const OgreColladaWriter& pre );
-  const OgreColladaWriter& operator= ( const OgreColladaWriter& pre );
+  Writer();
+  Writer( const Writer& pre );
+  const Writer& operator= ( const Writer& pre );
 
   typedef void (Ogre::Pass::*ColorSetter)(const Ogre::ColourValue&);
   void handleColorOrTexture(const COLLADAFW::EffectCommon& ce,
@@ -165,5 +167,7 @@ class OgreColladaWriter : public COLLADAFW::IWriter {
   void node_dfs_geocheck(const COLLADAFW::Node*);
 
 };
+
+} // end namespace OgreCollada
 
 #endif // OGRE_COLLADA_WRITER_H

@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE( basic_contents ) {
 
   Ogre::SceneNode* topnode = sceneMgr->getRootSceneNode()->createChildSceneNode("Top");
 
-  OgreSceneWriter writer(sceneMgr, topnode, ".");
+  OgreCollada::SceneWriter writer(sceneMgr, topnode, ".");
 
   COLLADASaxFWL::Loader loader;
   COLLADAFW::Root colladaRoot(&loader, &writer);

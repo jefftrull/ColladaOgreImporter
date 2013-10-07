@@ -16,11 +16,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <Math/COLLADABUMathMatrix4.h>
 #include "OgreColladaWriter.h"
 
-class OgreMeshWriter : public OgreColladaWriter {
+namespace OgreCollada {
+
+class MeshWriter : public Writer {
  public:
-  OgreMeshWriter(const Ogre::String& // dir to find materials etc. in
+  MeshWriter(const Ogre::String& // dir to find materials etc. in
 		 );
-  ~OgreMeshWriter();
+  ~MeshWriter();
 
   // user access to generated data
   Ogre::MeshPtr getMesh() { return m_mesh; }
@@ -34,9 +36,9 @@ class OgreMeshWriter : public OgreColladaWriter {
 
  private:
   // hide default xtor and compiler-generated copy and assignment operators
-  OgreMeshWriter();
-  OgreMeshWriter( const OgreMeshWriter& pre );
-  const OgreMeshWriter& operator= ( const OgreMeshWriter& pre );
+  MeshWriter();
+  MeshWriter( const MeshWriter& pre );
+  const MeshWriter& operator= ( const MeshWriter& pre );
 
   // record, for every library geometry, all the places where it's used, and their transforms
   typedef std::vector<std::pair<const COLLADAFW::MaterialBindingArray*, Ogre::Matrix4> > GeoInstUsageList;
@@ -62,7 +64,7 @@ class OgreMeshWriter : public OgreColladaWriter {
   class OgreMeshDispatchBase : public COLLADAFW::IWriter {
   public:
 
-  OgreMeshDispatchBase(OgreMeshWriter* converter) : m_converter(converter) {}
+  OgreMeshDispatchBase(MeshWriter* converter) : m_converter(converter) {}
     // by default methods do nothing
     virtual void cancel(const COLLADAFW::String&) {}
     virtual void start() {}
@@ -86,12 +88,12 @@ class OgreMeshWriter : public OgreColladaWriter {
     virtual void finish() = 0;  // we expect all subclasses to override
 
   protected:
-    OgreMeshWriter* m_converter;   // dispatch target (the "real" methods)
+    MeshWriter* m_converter;   // dispatch target (the "real" methods)
   };
 
   class OgreMeshDispatchPass1 : public OgreMeshDispatchBase {
   public: 
-  OgreMeshDispatchPass1(OgreMeshWriter* converter) : OgreMeshDispatchBase(converter) {}
+  OgreMeshDispatchPass1(MeshWriter* converter) : OgreMeshDispatchBase(converter) {}
 
     // forward everything except geometry
     virtual void start() { m_converter->start(); }
@@ -116,7 +118,7 @@ class OgreMeshWriter : public OgreColladaWriter {
 
   class OgreMeshDispatchPass2 : public OgreMeshDispatchBase {
   public:
-    OgreMeshDispatchPass2(OgreMeshWriter* converter) : OgreMeshDispatchBase(converter) {}
+    OgreMeshDispatchPass2(MeshWriter* converter) : OgreMeshDispatchBase(converter) {}
 
     // Forward only writeGeometry and finish
     virtual bool writeGeometry(const COLLADAFW::Geometry* g) { return m_converter->writeGeometry(g); }
@@ -131,3 +133,5 @@ class OgreMeshWriter : public OgreColladaWriter {
   OgreMeshDispatchPass2* getPass2ProxyWriter() { return m_pass2Writer; }
 
 };
+
+} // end namespace OgreCollada

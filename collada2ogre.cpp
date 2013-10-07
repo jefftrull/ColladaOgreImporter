@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
   boost::filesystem::path texturedir = meshpath.parent_path();
   //  boost::filesystem::path texturedir = meshpath.parent_path() / meshpath.stem();  // slash operator concatenates path components
 
-  OgreMeshWriter writer(texturedir.string());
+  OgreCollada::MeshWriter writer(texturedir.string());
   COLLADASaxFWL::Loader loader;
   COLLADAFW::Root pass1Root(&loader, writer.getPass1ProxyWriter());
   if (!pass1Root.loadDocument(daepath.string())) {

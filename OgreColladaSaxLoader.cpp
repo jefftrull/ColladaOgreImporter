@@ -18,29 +18,29 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "OgreColladaSaxLoader.h"
 #include "OgreColladaWriter.h"
 
-OgreColladaSaxLoader::OgreColladaExtraDataHandler::OgreColladaExtraDataHandler()
+OgreCollada::SaxLoader::ExtraDataHandler::ExtraDataHandler()
   : COLLADASaxFWL::IExtraDataCallbackHandler(), m_latestEffect(0) {}
 
-OgreColladaSaxLoader::OgreColladaExtraDataHandler::~OgreColladaExtraDataHandler() {}
+OgreCollada::SaxLoader::ExtraDataHandler::~ExtraDataHandler() {}
 
-bool OgreColladaSaxLoader::OgreColladaExtraDataHandler::elementBegin(
+bool OgreCollada::SaxLoader::ExtraDataHandler::elementBegin(
   const ParserChar* elementName, const GeneratedSaxParser::xmlChar** attributes) {
   
   return (std::string(elementName) == "double_sided");  // signal our interest
 }
 
-bool OgreColladaSaxLoader::OgreColladaExtraDataHandler::elementEnd(const ParserChar* elementName ) {
+bool OgreCollada::SaxLoader::ExtraDataHandler::elementEnd(const ParserChar* elementName ) {
   return true;
 }
 
-bool OgreColladaSaxLoader::OgreColladaExtraDataHandler::textData(const ParserChar* text, size_t textLength) {
+bool OgreCollada::SaxLoader::ExtraDataHandler::textData(const ParserChar* text, size_t textLength) {
    if (std::string(text, textLength) == "1") {
      // a single value of 1 indicates we should disable backside culling (so the material is visible from both sides)
      m_writer->disableCulling(m_latestEffect->getUniqueId());
    }
    return true;
 }
-bool OgreColladaSaxLoader::OgreColladaExtraDataHandler::parseElement (
+bool OgreCollada::SaxLoader::ExtraDataHandler::parseElement (
   const ParserChar* profileName, const StringHash& elementHash,
   const COLLADAFW::UniqueId& uniqueId, COLLADAFW::Object* object ) {
 
@@ -51,29 +51,29 @@ bool OgreColladaSaxLoader::OgreColladaExtraDataHandler::parseElement (
   return false;   // <extra> tag pertains to some other exporter
 }
 
-void OgreColladaSaxLoader::OgreColladaExtraDataHandler::setWriter(OgreColladaWriter* w) {
+void OgreCollada::SaxLoader::ExtraDataHandler::setWriter(OgreCollada::Writer* w) {
   m_writer = w;
 }
 
-OgreColladaSaxLoader::OgreColladaSaxLoader()
+OgreCollada::SaxLoader::SaxLoader()
   : COLLADASaxFWL::Loader() {
   // add our private callback for <extra> tags
   registerExtraDataCallbackHandler(&m_extraDataHandler);
 }
 
-OgreColladaSaxLoader::~OgreColladaSaxLoader() {}
+OgreCollada::SaxLoader::~SaxLoader() {}
 
-bool OgreColladaSaxLoader::loadDocument(const COLLADAFW::String& fileName,
+bool OgreCollada::SaxLoader::loadDocument(const COLLADAFW::String& fileName,
                                         COLLADAFW::IWriter* writer) {
   // give the <extra> handler access to the writer to communicate special
   // information (initially, which materials should be double-sided)
-  m_extraDataHandler.setWriter(dynamic_cast<OgreColladaWriter*>(writer));
+  m_extraDataHandler.setWriter(dynamic_cast<Writer*>(writer));
   return COLLADASaxFWL::Loader::loadDocument(fileName, writer);
 }
 
-bool OgreColladaSaxLoader::loadDocument(const COLLADAFW::String& uri,
+bool OgreCollada::SaxLoader::loadDocument(const COLLADAFW::String& uri,
                                         const char* buffer, int length,
                                         COLLADAFW::IWriter* writer) {
-  m_extraDataHandler.setWriter(dynamic_cast<OgreColladaWriter*>(writer));
+  m_extraDataHandler.setWriter(dynamic_cast<Writer*>(writer));
   return COLLADASaxFWL::Loader::loadDocument(uri, buffer, length, writer);
 }
