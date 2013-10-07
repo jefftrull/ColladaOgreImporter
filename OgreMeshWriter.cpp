@@ -13,6 +13,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include <boost/lexical_cast.hpp>
 #include <COLLADAFWMatrix.h>
+#include <COLLADAFWGeometry.h>
+#include <COLLADAFWNode.h>
 #include <OgreManualObject.h>
 #include <OgreLogManager.h>
 #include "OgreMeshWriter.h"

@@ -21,17 +21,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <OgreMatrix4.h>
 #include <OgreCommon.h>
 
-#include "COLLADAFWIWriter.h"
-#include "COLLADAFWUniqueId.h"
-#include "COLLADAFWScene.h"
-#include "COLLADAFWVisualScene.h"
-#include "COLLADAFWLibraryNodes.h"
-#include "COLLADAFWMaterial.h"
-#include "COLLADAFWMesh.h"
-#include "COLLADAFWEffect.h"
-#include "COLLADAFWImage.h"
-#include "COLLADAFWFileInfo.h"
-#include "COLLADAFWGeometry.h"
+#include <COLLADAFWIWriter.h>
+#include <COLLADAFWMaterialBinding.h>
+
+namespace COLLADAFW {
+   class Node;
+   class EffectCommon;
+   class ColorOrTexture;
+}
 
 #define LOG_DEBUG(msg) { Ogre::LogManager::getSingleton().logMessage( Ogre::String((msg)) ); }
 

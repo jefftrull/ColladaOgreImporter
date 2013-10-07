@@ -25,6 +25,18 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <OgreColourValue.h>
 #include <OgreUserObjectBindings.h>
 
+#include <COLLADAFWFileInfo.h>
+#include <COLLADAFWColorOrTexture.h>
+#include <COLLADAFWSampler.h>
+#include <COLLADAFWEffectCommon.h>
+#include <COLLADAFWEffect.h>
+#include <COLLADAFWLibraryNodes.h>
+#include <COLLADAFWMesh.h>
+#include <COLLADAFWGeometry.h>
+#include <COLLADAFWMaterial.h>
+#include <COLLADAFWImage.h>
+#include <COLLADAFWVisualScene.h>
+
 #include <iostream>
 #include <algorithm>
 #include <iterator>
