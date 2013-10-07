@@ -103,7 +103,10 @@ void OgreColladaWriter::createMaterials() {
       Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(matname, "General");      
       // for now, one technique and one pass.  Get the ones supplied automatically upon Material creation:
       Ogre::Pass* pass = mat->getTechnique(0)->getPass(0);
-      pass->setCullingMode(Ogre::CULL_NONE);
+      if (std::find(m_unculledEffects.begin(), m_unculledEffects.end(), effid) != m_unculledEffects.end()) {
+        // This effect was marked "double_sided" in an <extra> tag within the effect.  Disable backside culling.
+        pass->setCullingMode(Ogre::CULL_NONE);
+      }
       for (int i = 0, count = effit->second.size(); i < count; ++i) {
 	if (i > 0) {
 	  pass = mat->getTechnique(0)->createPass();   // need a new pass for each effect
@@ -175,6 +178,10 @@ void OgreColladaWriter::createMaterials() {
       m_ogreMaterials.push_back(mat);
     }
   }
+}
+
+void OgreColladaWriter::disableCulling(COLLADAFW::UniqueId const& uid) {
+  m_unculledEffects.push_back(uid);
 }
 
 bool OgreColladaWriter::writeGlobalAsset(const FileInfo* fi) {

@@ -27,6 +27,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <OgreFrameListener.h>
 #include <OgreWindowEventUtilities.h>
 
+#include "OgreColladaSaxLoader.h"
+
 struct SimpleViewer : public Ogre::FrameListener, public Ogre::WindowEventListener {
   SimpleViewer() : root_(new Ogre::Root("plugins.cfg")), shutdown_(false)
  {
@@ -87,7 +89,7 @@ private:
 #include <boost/filesystem.hpp>
 
 #include <COLLADAFWRoot.h>
-#include <COLLADASaxFWLLoader.h>
+
 #include "OgreSceneWriter.h"
 
 int main(int argc, char **argv) {
@@ -140,7 +142,7 @@ int main(int argc, char **argv) {
 			 viewer.getSceneManager()->getRootSceneNode()->createChildSceneNode("Top"),
 			 dir);
 
-  COLLADASaxFWL::Loader loader;
+  OgreColladaSaxLoader loader;
   COLLADAFW::Root root(&loader, &writer);
   if (!root.loadDocument(fname)) {
     std::cerr << "load document failed\n";

@@ -39,6 +39,7 @@ class OgreColladaWriter : public COLLADAFW::IWriter {
  public:
   // no public xtor, child classes to supply their own
   ~OgreColladaWriter();
+
   // declare implementations for parent class's virtual functions
   virtual void cancel(const COLLADAFW::String&);
   virtual void start();
@@ -66,6 +67,10 @@ class OgreColladaWriter : public COLLADAFW::IWriter {
 
   const std::list<Ogre::MaterialPtr>& getMaterials() { return m_ogreMaterials; }
 
+  // a separate method to disable culling for materials marked "double sided"
+  // this is out-of-band information supplied by some converters and not an official
+  // part of the standard, so it takes this route
+  void disableCulling(COLLADAFW::UniqueId const&);
 
  protected:
   // parent class members aren't accessible to child constructors, so provide this xtor for children to use:
@@ -154,6 +159,8 @@ class OgreColladaWriter : public COLLADAFW::IWriter {
   std::list<Ogre::MaterialPtr> m_ogreMaterials;
 
   bool m_sketchUpWorkarounds;
+
+  std::vector<COLLADAFW::UniqueId> m_unculledEffects;
 
   // private debug functions
   void node_dfs_print(const COLLADAFW::Node*, int);

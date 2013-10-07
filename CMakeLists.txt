@@ -31,6 +31,7 @@ find_path(COLLADAFW_INCLUDE_DIR COLLADAFWRoot.h HINTS ${COLLADA_ROOT}/COLLADAFra
 find_path(COLLADASAX_INCLUDE_DIR COLLADASaxFWLLoader.h HINTS ${COLLADA_ROOT}/COLLADASaxFrameworkLoader/include)
 find_path(COLLADABASE_INCLUDE_DIR COLLADABUPlatform.h HINTS ${COLLADA_ROOT}/COLLADABaseUtils/include)
 find_path(COLLADASW_INCLUDE_DIR COLLADASWStreamWriter.h HINTS ${COLLADA_ROOT}/COLLADAStreamWriter/include)
+find_path(COLLADA_GENERATED_SAX_INCLUDE_DIR GeneratedSaxParser.h HINTS ${COLLADA_ROOT}/GeneratedSaxParser/include)
 # libraries
 find_library(COLLADABU_LIB OpenCOLLADABaseUtils HINTS ${COLLADA_ROOT}/build/lib)
 find_library(COLLADAFW_LIB OpenCOLLADAFramework HINTS ${COLLADA_ROOT}/build/lib)
@@ -45,7 +46,8 @@ find_library(MATHML_LIB MathMLSolver ${COLLADA_ROOT}/build/lib)
 # fail if not found
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(OpenCollada REQUIRED_VARS
-                                  COLLADAFW_INCLUDE_DIR COLLADASAX_INCLUDE_DIR COLLADABASE_INCLUDE_DIR
+                                  COLLADAFW_INCLUDE_DIR COLLADASAX_INCLUDE_DIR
+                                  COLLADABASE_INCLUDE_DIR COLLADA_GENERATED_SAX_INCLUDE_DIR
 				  COLLADABU_LIB COLLADAFW_LIB COLLADASAX_LIB COLLADASAXP_LIB
 				  UTF_LIB MATHML_LIB)
 
@@ -63,7 +65,7 @@ find_package(Boost REQUIRED filesystem system regex)
 
 find_package(OGRE 1.8 REQUIRED)
 
-include_directories(SYSTEM ${COLLADAFW_INCLUDE_DIR} ${COLLADASAX_INCLUDE_DIR} ${COLLADABASE_INCLUDE_DIR} ${OGRE_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM ${COLLADAFW_INCLUDE_DIR} ${COLLADASAX_INCLUDE_DIR} ${COLLADA_GENERATED_SAX_INCLUDE_DIR} ${COLLADABASE_INCLUDE_DIR} ${OGRE_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 if (CMAKE_COMPILER_IS_GNUCXX)
   # for unique_ptr, at least, and possibly other things (lambdas, move semantics)
@@ -71,7 +73,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 # make a library out of the Collada stuff
-add_library(collada_importer OgreMeshWriter.cpp OgreSceneWriter.cpp OgreColladaWriter.cpp)
+add_library(collada_importer OgreMeshWriter.cpp OgreSceneWriter.cpp OgreColladaWriter.cpp OgreColladaSaxLoader.cpp)
 # assume we have xml2 and pcre (definitely available on Ubuntu) but others come from OpenCollada dir
 target_link_libraries(collada_importer ${COLLADASAX_LIB} ${COLLADASAXP_LIB} ${COLLADAFW_LIB} ${COLLADABU_LIB} ${UTF_LIB} xml2 pcre ${MATHML_LIB})
 
