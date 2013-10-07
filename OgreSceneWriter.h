@@ -21,14 +21,19 @@ class OgreSceneWriter : public OgreColladaWriter {
 		  Ogre::SceneNode*,     // the scene node under which we instantiate the loaded data
 		  const Ogre::String&); // dir to find materials in
   ~OgreSceneWriter();
+  virtual bool writeCamera(const COLLADAFW::Camera*);
   virtual bool writeGeometry(const COLLADAFW::Geometry*);
   virtual void finish();
+
+  Ogre::Camera* getCamera();            // If Collada file defined and instantiated one (returns first)
 
  private:
   // hide default xtor and compiler-generated copy and assignment operators
   OgreSceneWriter();
   OgreSceneWriter( const OgreSceneWriter& pre );
   const OgreSceneWriter& operator= ( const OgreSceneWriter& pre );
+
+  std::map<COLLADAFW::UniqueId, COLLADAFW::Camera> m_cameras;
 
   // utility functions
   bool createSceneDFS(const COLLADAFW::Node*, Ogre::SceneNode*, const Ogre::String& prefix = "");
@@ -38,4 +43,5 @@ class OgreSceneWriter : public OgreColladaWriter {
   Ogre::SceneNode* m_topNode;
   Ogre::SceneManager* m_sceneMgr;
 
+  std::vector<Ogre::Camera*> m_instantiatedCameras;
 };

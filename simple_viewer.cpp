@@ -74,6 +74,13 @@ struct SimpleViewer : public Ogre::FrameListener, public Ogre::WindowEventListen
   Ogre::SceneManager*                 getSceneManager() { return scenemgr_; }
   Ogre::Camera*                       getCamera()       { return camera_; }
 
+  void setCamera(Ogre::Camera* camera) {
+    camera_ = camera;
+    viewport_->setCamera(camera_);
+    camera_->setAspectRatio(Ogre::Real(viewport_->getActualWidth()) /
+                            Ogre::Real(viewport_->getActualHeight()));
+  }
+
 private:
   std::unique_ptr<Ogre::Root>         root_;
   // in tutorial app only root gets deleted in destructor, so use raw pointers for these:
@@ -147,6 +154,12 @@ int main(int argc, char **argv) {
   if (!root.loadDocument(fname)) {
     std::cerr << "load document failed\n";
     return 1;
+  }
+
+  // if a camera was found during the Collada load, use it instead
+  Ogre::Camera* colladaCamera = writer.getCamera();
+  if (colladaCamera) {
+    viewer.setCamera(colladaCamera);
   }
 
   viewer.go();

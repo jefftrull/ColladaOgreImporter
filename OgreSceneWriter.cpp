@@ -16,6 +16,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include <COLLADAFWMatrix.h>
 #include <COLLADAFWLookat.h>
+#include <COLLADAFWCamera.h>
+
 #include <OgreManualObject.h>
 #include <OgreMatrix4.h>
 #include <OgreEntity.h>
@@ -29,6 +31,11 @@ OgreSceneWriter::OgreSceneWriter(Ogre::SceneManager* mgr,
 							    m_topNode(topnode), m_sceneMgr(mgr) {}
 
 OgreSceneWriter::~OgreSceneWriter() {}
+
+bool OgreSceneWriter::writeCamera(const COLLADAFW::Camera* camera) {
+  m_cameras.insert(std::make_pair(camera->getUniqueId(), *camera));
+  return true;
+}
 
 bool OgreSceneWriter::writeGeometry(const COLLADAFW::Geometry* g) {
 
@@ -235,6 +242,7 @@ bool OgreSceneWriter::createSceneDFS(const COLLADAFW::Node* cn, Ogre::SceneNode*
   const COLLADAFW::InstanceNodePointerArray& inodes = cn->getInstanceNodes();
   const COLLADAFW::InstanceGeometryPointerArray& ginodes = cn->getInstanceGeometries();
   const COLLADAFW::NodePointerArray& cnodes = cn->getChildNodes();
+  const COLLADAFW::InstanceCameraPointerArray& camnodes = cn->getInstanceCameras();
 
   // optimization: often (in Sketchup output, anyway) a library instance is the only child of a regular scene node
   // which supplies its transformation matrix.  in this case we can simply make build the instance in the current node,
@@ -324,6 +332,22 @@ bool OgreSceneWriter::createSceneDFS(const COLLADAFW::Node* cn, Ogre::SceneNode*
     }
   }
 
+  // instantiate/attach cameras
+  for (int i = 0, count = camnodes.getCount(); i < count; ++i) {
+    // verify we have recorded this one previously
+    auto const & camit = m_cameras.find(camnodes[i]->getInstanciatedObjectId());
+    if (camit == m_cameras.end()) {
+      std::cerr << "COLLADA ERROR: could not find referenced camera with id=" << camnodes[i]->getInstanciatedObjectId() << std::endl;
+      continue;
+    }
+    Ogre::Camera* camera = m_sceneMgr->createCamera(camit->second.getName());
+    camera->setFOVy((Ogre::Degree)camit->second.getYFov());
+    camera->setNearClipDistance(camit->second.getNearClippingPlane());
+    camera->setFarClipDistance(camit->second.getFarClippingPlane());
+    sn->attachObject(camera);
+    m_instantiatedCameras.push_back(camera);
+  }
+
   // for each regular child node:
   //     create the node, call recursively
 
@@ -363,4 +387,11 @@ bool OgreSceneWriter::processLibraryInstance(const COLLADAFW::InstanceNode* inod
     return false;
  
  return true;
+}
+
+Ogre::Camera* OgreSceneWriter::getCamera() {
+   if (!m_instantiatedCameras.empty()) {
+      return m_instantiatedCameras[0];
+   }
+   return nullptr;
 }
