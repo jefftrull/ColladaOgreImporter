@@ -13,7 +13,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include <OgreMesh.h>
 
-#include <Math/COLLADABUMathMatrix4.h>
+namespace COLLADABU { namespace Math { class Matrix4; }  }
+
 #include "OgreColladaWriter.h"
 
 namespace OgreCollada {

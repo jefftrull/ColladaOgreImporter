@@ -14,6 +14,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <COLLADABUURI.h>
 #include <COLLADAFWMatrix.h>
 #include <COLLADAFWLookat.h>
 #include <COLLADAFWCamera.h>
