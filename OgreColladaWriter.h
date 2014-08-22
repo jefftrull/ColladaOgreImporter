@@ -64,7 +64,7 @@ class Writer : public COLLADAFW::IWriter {
 
   void setGraphOutput(const char* filename) { m_dotfn = filename; }
 
-  const std::list<Ogre::MaterialPtr>& getMaterials() { return m_ogreMaterials; }
+  std::vector<Ogre::MaterialPtr> const& getMaterials() const { return m_ogreMaterials; }
 
   // a separate method to disable culling for materials marked "double sided"
   // this is out-of-band information supplied by some converters and not an official
@@ -155,7 +155,7 @@ class Writer : public COLLADAFW::IWriter {
 			    const COLLADAFW::ColorOrTexture&,
 			    Ogre::Pass*, ColorSetter, Ogre::TrackVertexColourType);
 
-  std::list<Ogre::MaterialPtr> m_ogreMaterials;
+  std::vector<Ogre::MaterialPtr> m_ogreMaterials;
 
   bool m_sketchUpWorkarounds;
 

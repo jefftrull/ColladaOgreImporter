@@ -118,14 +118,13 @@ int main(int argc, char *argv[])
   }
 
   // access mesh, materials list and report statistics
-  const std::list<Ogre::MaterialPtr>& materials = writer.getMaterials();
+  auto const& materials = writer.getMaterials();
   LOG_DEBUG("mesh conversion produced " + boost::lexical_cast<Ogre::String>(materials.size()) + " materials:");
   Ogre::MaterialSerializer matser;
   matser.addListener(new MWMatSerListener());
-  for (std::list<Ogre::MaterialPtr>::const_iterator matit = materials.begin();
-       matit != materials.end(); ++matit) {
-    LOG_DEBUG((*matit)->getName());
-    matser.queueForExport(*matit);
+  for (Ogre::MaterialPtr mat : materials) {
+    LOG_DEBUG(mat->getName());
+    matser.queueForExport(mat);
   }
   matser.exportQueued(matpath.string());
 
