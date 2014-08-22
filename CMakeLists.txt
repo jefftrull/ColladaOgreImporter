@@ -62,6 +62,8 @@ elseif((DEFINED $ENV{OGRE_HOME}) AND (EXISTS $ENV{OGRE_HOME}/CMake/Packages))
 endif()
 
 find_package(Boost REQUIRED filesystem system regex)
+# Ogre's find_package appears to clobber ${Boost_LIBRARIES}
+set(BOOST_LIB_FILES ${Boost_LIBRARIES})
 
 find_package(OGRE 1.8 REQUIRED)
 
@@ -79,7 +81,7 @@ target_link_libraries(collada_importer ${COLLADASAX_LIB} ${COLLADASAXP_LIB} ${CO
 
 # data conversion app
 add_executable(c2mesh collada2ogre.cpp)
-set(APPLIBS ${OGRE_LIBRARIES} collada_importer ${Boost_LIBRARIES})
+set(APPLIBS ${OGRE_LIBRARIES} collada_importer ${BOOST_LIB_FILES})
 target_link_libraries(c2mesh ${APPLIBS})
 
 # viewer app
