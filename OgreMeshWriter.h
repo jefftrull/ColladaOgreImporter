@@ -61,40 +61,10 @@ class MeshWriter : public Writer {
   // Using this pattern we can invoke the converter methods in an arbitrary order, in fact, as long
   // as we are willing to run the loader N times...  Thanks to Michael Caisse for this idea.
 
-  // base class supplies all methods as NOP.  Passes define only methods that do something
-  class OgreMeshDispatchBase : public COLLADAFW::IWriter {
-  public:
-
-  OgreMeshDispatchBase(MeshWriter* converter) : m_converter(converter) {}
-    // by default methods do nothing
-    virtual void cancel(const COLLADAFW::String&) {}
-    virtual void start() {}
-    virtual bool writeGlobalAsset(const COLLADAFW::FileInfo*) { return true; }
-    virtual bool writeScene(const COLLADAFW::Scene*) { return true; }
-    virtual bool writeLibraryNodes(const COLLADAFW::LibraryNodes*) { return true; }
-    virtual bool writeMaterial(const COLLADAFW::Material*) { return true; }
-    virtual bool writeEffect(const COLLADAFW::Effect*) { return true; }
-    virtual bool writeCamera(const COLLADAFW::Camera*) { return true; }
-    virtual bool writeImage(const COLLADAFW::Image*) { return true; }
-    virtual bool writeLight(const COLLADAFW::Light*) { return true; }
-    virtual bool writeAnimation(const COLLADAFW::Animation*) { return true; }
-    virtual bool writeAnimationList(const COLLADAFW::AnimationList*) { return true; }
-    virtual bool writeSkinControllerData(const COLLADAFW::SkinControllerData*) { return true; }
-    virtual bool writeController(const COLLADAFW::Controller*) { return true; }
-    virtual bool writeFormulas(const COLLADAFW::Formulas*) { return true; }
-    virtual bool writeKinematicsScene(const COLLADAFW::KinematicsScene*) { return true; }
-    virtual bool writeVisualScene(const COLLADAFW::VisualScene*) { return true; }
-
-    virtual bool writeGeometry(const COLLADAFW::Geometry*) { return true; }
-    virtual void finish() = 0;  // we expect all subclasses to override
-
-  protected:
+  class OgreMeshDispatchPass1 : public WriterBase {
     MeshWriter* m_converter;   // dispatch target (the "real" methods)
-  };
-
-  class OgreMeshDispatchPass1 : public OgreMeshDispatchBase {
   public: 
-  OgreMeshDispatchPass1(MeshWriter* converter) : OgreMeshDispatchBase(converter) {}
+    OgreMeshDispatchPass1(MeshWriter* converter) : m_converter(converter) {}
 
     // forward everything except geometry
     virtual void start() { m_converter->start(); }
@@ -117,9 +87,10 @@ class MeshWriter : public Writer {
 
   };
 
-  class OgreMeshDispatchPass2 : public OgreMeshDispatchBase {
+  class OgreMeshDispatchPass2 : public WriterBase {
+    MeshWriter* m_converter;   // dispatch target (the "real" methods)
   public:
-    OgreMeshDispatchPass2(MeshWriter* converter) : OgreMeshDispatchBase(converter) {}
+    OgreMeshDispatchPass2(MeshWriter* converter) : m_converter(converter) {}
 
     // Forward only writeGeometry and finish
     virtual bool writeGeometry(const COLLADAFW::Geometry* g) { return m_converter->writeGeometry(g); }

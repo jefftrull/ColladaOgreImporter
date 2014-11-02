@@ -24,6 +24,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <COLLADAFWIWriter.h>
 #include <COLLADAFWMaterialBinding.h>
 
+#include "OgreColladaWriterBase.h"
+
 namespace COLLADAFW {
    class Node;
    class EffectCommon;
@@ -34,10 +36,9 @@ namespace COLLADAFW {
 
 namespace OgreCollada {
 
-class Writer : public COLLADAFW::IWriter {
+// This class contains implementations shared by Scene (online) and Mesh writers
+class Writer : public WriterBase {
  public:
-  // no public xtor, child classes to supply their own
-  ~Writer();
 
   // declare implementations for parent class's virtual functions
   virtual void cancel(const COLLADAFW::String&);
@@ -49,13 +50,6 @@ class Writer : public COLLADAFW::IWriter {
   virtual bool writeEffect(const COLLADAFW::Effect*);
   virtual bool writeCamera(const COLLADAFW::Camera*);
   virtual bool writeImage(const COLLADAFW::Image*);
-  virtual bool writeLight(const COLLADAFW::Light*);
-  virtual bool writeAnimation(const COLLADAFW::Animation*);
-  virtual bool writeAnimationList(const COLLADAFW::AnimationList*);
-  virtual bool writeSkinControllerData(const COLLADAFW::SkinControllerData*);
-  virtual bool writeController(const COLLADAFW::Controller*);
-  virtual bool writeFormulas(const COLLADAFW::Formulas*);
-  virtual bool writeKinematicsScene(const COLLADAFW::KinematicsScene*);
   virtual bool writeVisualScene(const COLLADAFW::VisualScene*);
 
   // two IWriter methods we expect child classes to implement

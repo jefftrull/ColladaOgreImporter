@@ -16,6 +16,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <COLLADAFWMatrix.h>
 #include <COLLADAFWGeometry.h>
 #include <COLLADAFWNode.h>
+#include <COLLADAFWEffectCommon.h>
 #include <OgreManualObject.h>
 #include <OgreLogManager.h>
 #include "OgreMeshWriter.h"

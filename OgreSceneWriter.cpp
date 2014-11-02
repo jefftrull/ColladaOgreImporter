@@ -20,6 +20,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <COLLADAFWCamera.h>
 #include <COLLADAFWMesh.h>
 #include <COLLADAFWNode.h>
+#include <COLLADAFWEffectCommon.h>
 
 #include <OgreManualObject.h>
 #include <OgreMatrix4.h>

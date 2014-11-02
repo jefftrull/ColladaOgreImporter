@@ -65,7 +65,7 @@ OgreCollada::Writer::Writer(const Ogre::String& dir, const char* dotfn,
   }
 }
 
-OgreCollada::Writer::~Writer() {}
+OgreCollada::WriterBase::~WriterBase() {}
 
 void OgreCollada::Writer::cancel(const COLLADAFW::String&) {}
 
@@ -255,7 +255,7 @@ bool OgreCollada::Writer::writeLibraryNodes(const COLLADAFW::LibraryNodes* lnode
 
   return true;
 }
-bool OgreCollada::Writer::addGeometry(const COLLADAFW::Geometry* g,         // input geometry from Collada
+bool OgreCollada::Writer::addGeometry(const COLLADAFW::Geometry* g,       // input geometry from Collada
 				    Ogre::ManualObject* manobj,           // object under construction
 				    const Ogre::Matrix4& xform,           // transform within the object
 				    const COLLADAFW::MaterialBindingArray* mba) {
@@ -543,27 +543,6 @@ bool OgreCollada::Writer::writeImage(const COLLADAFW::Image* i) {
     }
     LOG_DEBUG("which is unsupported");
   }
-  return true;
-}
-bool OgreCollada::Writer::writeLight(const COLLADAFW::Light*) {
-  return true;
-}
-bool OgreCollada::Writer::writeAnimation(const COLLADAFW::Animation*) {
-  return true;
-}
-bool OgreCollada::Writer::writeAnimationList(const COLLADAFW::AnimationList*) {
-  return true;
-}
-bool OgreCollada::Writer::writeSkinControllerData(const COLLADAFW::SkinControllerData*) {
-  return true;
-}
-bool OgreCollada::Writer::writeController(const COLLADAFW::Controller*) {
-  return true;
-}
-bool OgreCollada::Writer::writeFormulas(const COLLADAFW::Formulas*) {
-  return true;
-}
-bool OgreCollada::Writer::writeKinematicsScene(const COLLADAFW::KinematicsScene*) {
   return true;
 }
 
