@@ -16,7 +16,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <COLLADAFWEffect.h>
 
 #include "OgreColladaSaxLoader.h"
-#include "OgreColladaWriter.h"
+#include "OgreSceneWriter.h"
 
 OgreCollada::SaxLoader::ExtraDataHandler::ExtraDataHandler()
   : COLLADASaxFWL::IExtraDataCallbackHandler(), m_latestEffect(0) {}
@@ -67,13 +67,13 @@ bool OgreCollada::SaxLoader::loadDocument(const COLLADAFW::String& fileName,
                                         COLLADAFW::IWriter* writer) {
   // give the <extra> handler access to the writer to communicate special
   // information (initially, which materials should be double-sided)
-  m_extraDataHandler.setWriter(dynamic_cast<Writer*>(writer));
+  m_extraDataHandler.setWriter(dynamic_cast<SceneWriter*>(writer));
   return COLLADASaxFWL::Loader::loadDocument(fileName, writer);
 }
 
 bool OgreCollada::SaxLoader::loadDocument(const COLLADAFW::String& uri,
                                         const char* buffer, int length,
                                         COLLADAFW::IWriter* writer) {
-  m_extraDataHandler.setWriter(dynamic_cast<Writer*>(writer));
+  m_extraDataHandler.setWriter(dynamic_cast<SceneWriter*>(writer));
   return COLLADASaxFWL::Loader::loadDocument(uri, buffer, length, writer);
 }
