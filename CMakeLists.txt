@@ -75,7 +75,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 # make a library out of the Collada stuff
-add_library(collada_importer OgreMeshWriter.cpp OgreSceneWriter.cpp OgreColladaWriter.cpp OgreColladaSaxLoader.cpp)
+add_library(collada_importer OgreMeshWriter.cpp OgreSceneWriter.cpp OgreColladaSaxLoader.cpp)
 # assume we have xml2 and pcre (definitely available on Ubuntu) but others come from OpenCollada dir
 target_link_libraries(collada_importer ${COLLADASAX_LIB} ${COLLADASAXP_LIB} ${COLLADAFW_LIB} ${COLLADABU_LIB} ${UTF_LIB} xml2 pcre ${MATHML_LIB})
 

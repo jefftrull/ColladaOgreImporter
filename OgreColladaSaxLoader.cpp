@@ -16,7 +16,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <COLLADAFWEffect.h>
 
 #include "OgreColladaSaxLoader.h"
-#include "OgreSceneWriter.h"
 
 OgreCollada::SaxLoader::ExtraDataHandler::ExtraDataHandler()
   : COLLADASaxFWL::IExtraDataCallbackHandler(), m_latestEffect(0) {}
@@ -51,7 +50,7 @@ bool OgreCollada::SaxLoader::ExtraDataHandler::parseElement (
   return false;   // <extra> tag pertains to some other exporter
 }
 
-void OgreCollada::SaxLoader::ExtraDataHandler::setWriter(OgreCollada::Writer* w) {
+void OgreCollada::SaxLoader::ExtraDataHandler::setWriter(OgreCollada::SceneWriter* w) {
   m_writer = w;
 }
 

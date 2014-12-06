@@ -18,13 +18,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "COLLADASaxFWLIExtraDataCallbackHandler.h"
 #include "COLLADASaxFWLLoader.h"
 
+#include "OgreSceneWriter.h"
+
 namespace COLLADAFW {
    class Effect;
 }
 
 namespace OgreCollada {
-
-class Writer;
 
 class SaxLoader : public COLLADASaxFWL::Loader {
   // private class implementing the callback handler interface
@@ -45,11 +45,11 @@ class SaxLoader : public COLLADASaxFWL::Loader {
       const COLLADAFW::UniqueId& uniqueId,
       COLLADAFW::Object* object );
 
-    void setWriter(Writer* writer);
+    void setWriter(SceneWriter* writer);
 
   private:
     COLLADAFW::Effect* m_latestEffect;
-    Writer* m_writer;
+    SceneWriter* m_writer;
   };
 
   ExtraDataHandler m_extraDataHandler;

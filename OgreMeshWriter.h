@@ -18,11 +18,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 namespace COLLADABU { namespace Math { class Matrix4; }  }
 
-#include "OgreColladaWriter.h"
+#include "OgreColladaWriter.hpp"
 
 namespace OgreCollada {
 
-class MeshWriter : public Writer {
+class MeshWriter : public Writer<MeshWriter> {
  public:
   MeshWriter(const Ogre::String& // dir to find materials etc. in
 		 );
@@ -32,8 +32,8 @@ class MeshWriter : public Writer {
   Ogre::MeshPtr getMesh() { return m_mesh; }
 
   // ColladaWriter methods we will implement
-  virtual bool writeGeometry(const COLLADAFW::Geometry*);
-  virtual void finish();
+  bool geometryImpl(const COLLADAFW::Geometry*);
+  void finishImpl();
 
   // a replacement for finish(), for the the first pass only
   void pass1Finish();
@@ -64,40 +64,42 @@ class MeshWriter : public Writer {
   // Using this pattern we can invoke the converter methods in an arbitrary order, in fact, as long
   // as we are willing to run the loader N times...  Thanks to Michael Caisse for this idea.
 
-  class OgreMeshDispatchPass1 : public WriterBase {
+  class OgreMeshDispatchPass1 : public WriterBase<OgreMeshDispatchPass1> {
     MeshWriter* m_converter;   // dispatch target (the "real" methods)
   public: 
     OgreMeshDispatchPass1(MeshWriter* converter) : m_converter(converter) {}
 
     // forward everything except geometry
-    virtual void start() { m_converter->start(); }
-    virtual bool writeGlobalAsset(const COLLADAFW::FileInfo* fi) { return m_converter->writeGlobalAsset(fi); }
-    virtual bool writeScene(const COLLADAFW::Scene* s) { return m_converter->writeScene(s); }
-    virtual bool writeLibraryNodes(const COLLADAFW::LibraryNodes* ln) { return m_converter->writeLibraryNodes(ln); }
-    virtual bool writeMaterial(const COLLADAFW::Material* m) { return m_converter->writeMaterial(m); }
-    virtual bool writeEffect(const COLLADAFW::Effect* e) { return m_converter->writeEffect(e); }
-    virtual bool writeCamera(const COLLADAFW::Camera* c) { return m_converter->writeCamera(c); }
-    virtual bool writeImage(const COLLADAFW::Image* i) { return m_converter->writeImage(i); }
-    virtual bool writeLight(const COLLADAFW::Light* l) { return m_converter->writeLight(l); }
-    virtual bool writeAnimation(const COLLADAFW::Animation* a) { return m_converter->writeAnimation(a); }
-    virtual bool writeAnimationList(const COLLADAFW::AnimationList* al) { return m_converter->writeAnimationList(al); }
-    virtual bool writeSkinControllerData(const COLLADAFW::SkinControllerData* d) { return m_converter->writeSkinControllerData(d); }
-    virtual bool writeController(const COLLADAFW::Controller* c) { return m_converter->writeController(c); }
-    virtual bool writeFormulas(const COLLADAFW::Formulas* f) { return m_converter->writeFormulas(f); }
-    virtual bool writeKinematicsScene(const COLLADAFW::KinematicsScene* s) { return m_converter->writeKinematicsScene(s); }
-    virtual bool writeVisualScene(const COLLADAFW::VisualScene* vs) { return m_converter->writeVisualScene(vs); }
-    virtual void finish() { m_converter->pass1Finish(); }
+    void start() { m_converter->start(); }
+    bool globalAssetImpl(const COLLADAFW::FileInfo* fi) { return m_converter->globalAssetImpl(fi); }
+    bool sceneImpl(const COLLADAFW::Scene* s) { return m_converter->sceneImpl(s); }
+    bool libraryNodesImpl(const COLLADAFW::LibraryNodes* ln) { return m_converter->libraryNodesImpl(ln); }
+    bool materialImpl(const COLLADAFW::Material* m) { return m_converter->materialImpl(m); }
+    bool effectImpl(const COLLADAFW::Effect* e) { return m_converter->effectImpl(e); }
+    bool cameraImpl(const COLLADAFW::Camera* c) { return m_converter->cameraImpl(c); }
+    bool imageImpl(const COLLADAFW::Image* i) { return m_converter->imageImpl(i); }
+    bool lightImpl(const COLLADAFW::Light* l) { return m_converter->lightImpl(l); }
+    bool animationImpl(const COLLADAFW::Animation* a) { return m_converter->animationImpl(a); }
+    bool animationListImpl(const COLLADAFW::AnimationList* al) { return m_converter->animationListImpl(al); }
+    bool skinControllerDataImpl(const COLLADAFW::SkinControllerData* d) { return m_converter->skinControllerDataImpl(d); }
+    bool controllerImpl(const COLLADAFW::Controller* c) { return m_converter->controllerImpl(c); }
+    bool formulasImpl(const COLLADAFW::Formulas* f) { return m_converter->formulasImpl(f); }
+    bool kinematicsSceneImpl(const COLLADAFW::KinematicsScene* s) { return m_converter->kinematicsSceneImpl(s); }
+    bool visualSceneImpl(const COLLADAFW::VisualScene* vs) { return m_converter->visualSceneImpl(vs); }
+    void finishImpl() { m_converter->pass1Finish(); }
 
   };
 
-  class OgreMeshDispatchPass2 : public WriterBase {
+  class OgreMeshDispatchPass2 : public WriterBase<OgreMeshDispatchPass2> {
     MeshWriter* m_converter;   // dispatch target (the "real" methods)
   public:
     OgreMeshDispatchPass2(MeshWriter* converter) : m_converter(converter) {}
 
     // Forward only writeGeometry and finish
-    virtual bool writeGeometry(const COLLADAFW::Geometry* g) { return m_converter->writeGeometry(g); }
-    virtual void finish() { m_converter->finish(); }
+    bool geometryImpl(const COLLADAFW::Geometry* g) {
+      return m_converter->geometryImpl(g);
+    }
+    void finishImpl() { m_converter->finishImpl(); }
   };
 
   OgreMeshDispatchPass1* m_pass1Writer;

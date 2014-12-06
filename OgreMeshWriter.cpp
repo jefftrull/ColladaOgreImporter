@@ -31,7 +31,8 @@ OgreCollada::MeshWriter::MeshWriter(const Ogre::String& dir) : Writer(dir, 0, fa
 
 OgreCollada::MeshWriter::~MeshWriter() {}
 
-bool OgreCollada::MeshWriter::writeGeometry(const COLLADAFW::Geometry* g) {
+bool OgreCollada::MeshWriter::geometryImpl(const COLLADAFW::Geometry* g) {
+LOG_DEBUG("geometryImpl called!");
   // find where this geometry gets instantiated
   GeoUsageMapIter mit = m_geometryUsage.find(g->getUniqueId());
   if (mit == m_geometryUsage.end()) {
@@ -64,7 +65,7 @@ void OgreCollada::MeshWriter::pass1Finish() {
   m_manobj = new Ogre::ManualObject(m_vsRootNodes[0]->getName() + "_mobj");
 }
 
-void OgreCollada::MeshWriter::finish() {
+void OgreCollada::MeshWriter::finishImpl() {
   createMaterials();
 
   // close manualobject and convert to mesh

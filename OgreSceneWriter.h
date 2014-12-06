@@ -17,7 +17,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <OgreSceneManager.h>
 #include <COLLADAFWInstanceNode.h>
 
-#include "OgreColladaWriter.h"
+#include "OgreColladaWriter.hpp"
 
 namespace COLLADAFW {
    class Geometry;
@@ -25,15 +25,16 @@ namespace COLLADAFW {
 
 namespace OgreCollada {
 
-class SceneWriter : public Writer {
+class SceneWriter : public Writer<SceneWriter> {
  public:
   SceneWriter(Ogre::SceneManager*,  // the SceneManager in which to create SceneNodes
 		  Ogre::SceneNode*,     // the scene node under which we instantiate the loaded data
 		  const Ogre::String&); // dir to find materials in
   ~SceneWriter();
-  virtual bool writeCamera(const COLLADAFW::Camera*);
-  virtual bool writeGeometry(const COLLADAFW::Geometry*);
-  virtual void finish();
+
+  bool cameraImpl(const COLLADAFW::Camera*);
+  bool geometryImpl(const COLLADAFW::Geometry*);
+  void finish();
 
   Ogre::Camera* getCamera();            // If Collada file defined and instantiated one (returns first)
 
