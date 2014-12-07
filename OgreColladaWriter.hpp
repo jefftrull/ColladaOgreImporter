@@ -144,8 +144,6 @@ class Writer : public WriterBase<Writer<Derived>> {
     return true;
   }
 
-  bool write(const COLLADAFW::Camera*) { return true; }
-
   bool write(const COLLADAFW::Image* i) {
     // these are basically texture jpegs... they contain a file path
     if (i->getSourceType() == COLLADAFW::Image::SOURCE_TYPE_URI) {
