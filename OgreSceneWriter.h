@@ -32,8 +32,8 @@ class SceneWriter : public Writer<SceneWriter> {
 		  const Ogre::String&); // dir to find materials in
   ~SceneWriter();
 
-  bool cameraImpl(const COLLADAFW::Camera*);
-  bool geometryImpl(const COLLADAFW::Geometry*);
+  bool write(const COLLADAFW::Camera*);
+  bool write(const COLLADAFW::Geometry*);
   void finish();
 
   Ogre::Camera* getCamera();            // If Collada file defined and instantiated one (returns first)

@@ -31,8 +31,7 @@ OgreCollada::MeshWriter::MeshWriter(const Ogre::String& dir) : Writer(dir, 0, fa
 
 OgreCollada::MeshWriter::~MeshWriter() {}
 
-bool OgreCollada::MeshWriter::geometryImpl(const COLLADAFW::Geometry* g) {
-LOG_DEBUG("geometryImpl called!");
+bool OgreCollada::MeshWriter::write(const COLLADAFW::Geometry* g) {
   // find where this geometry gets instantiated
   GeoUsageMapIter mit = m_geometryUsage.find(g->getUniqueId());
   if (mit == m_geometryUsage.end()) {

@@ -34,52 +34,52 @@ public:
     static_cast<Writer*>(this)->startImpl();
   }
   virtual bool writeGlobalAsset(const COLLADAFW::FileInfo* fi) {
-    return static_cast<Writer*>(this)->globalAssetImpl(fi);
+    return static_cast<Writer*>(this)->write(fi);
   }
   virtual bool writeScene(const COLLADAFW::Scene* s) {
-    return static_cast<Writer*>(this)->sceneImpl(s);
+    return static_cast<Writer*>(this)->write(s);
   }
   virtual bool writeLibraryNodes(const COLLADAFW::LibraryNodes* ln) {
-    return static_cast<Writer*>(this)->libraryNodesImpl(ln);
+    return static_cast<Writer*>(this)->write(ln);
   }
   virtual bool writeMaterial(const COLLADAFW::Material* m) {
-    return static_cast<Writer*>(this)->materialImpl(m);
+    return static_cast<Writer*>(this)->write(m);
   }
   virtual bool writeEffect(const COLLADAFW::Effect* e) {
-    return static_cast<Writer*>(this)->effectImpl(e);
+    return static_cast<Writer*>(this)->write(e);
   }
   virtual bool writeCamera(const COLLADAFW::Camera* c) {
-    return static_cast<Writer*>(this)->cameraImpl(c);
+    return static_cast<Writer*>(this)->write(c);
   }
   virtual bool writeImage(const COLLADAFW::Image* i) {
-    return static_cast<Writer*>(this)->imageImpl(i);
+    return static_cast<Writer*>(this)->write(i);
   }
   virtual bool writeLight(const COLLADAFW::Light* l) {
-    return static_cast<Writer*>(this)->lightImpl(l);
+    return static_cast<Writer*>(this)->write(l);
   }
   virtual bool writeAnimation(const COLLADAFW::Animation* a) {
-    return static_cast<Writer*>(this)->animationImpl(a);
+    return static_cast<Writer*>(this)->write(a);
   }
   virtual bool writeAnimationList(const COLLADAFW::AnimationList* al) {
-    return static_cast<Writer*>(this)->animationListImpl(al);
+    return static_cast<Writer*>(this)->write(al);
   }
   virtual bool writeSkinControllerData(const COLLADAFW::SkinControllerData* scd) {
-    return static_cast<Writer*>(this)->skinControllerDataImpl(scd);
+    return static_cast<Writer*>(this)->write(scd);
   }
   virtual bool writeController(const COLLADAFW::Controller* c) {
-    return static_cast<Writer*>(this)->controllerImpl(c);
+    return static_cast<Writer*>(this)->write(c);
   }
   virtual bool writeFormulas(const COLLADAFW::Formulas* f) {
-    return static_cast<Writer*>(this)->formulasImpl(f);
+    return static_cast<Writer*>(this)->write(f);
   }
   virtual bool writeKinematicsScene(const COLLADAFW::KinematicsScene* ks) {
-    return static_cast<Writer*>(this)->kinematicsSceneImpl(ks);
+    return static_cast<Writer*>(this)->write(ks);
   }
   virtual bool writeVisualScene(const COLLADAFW::VisualScene* vs) {
-    return static_cast<Writer*>(this)->visualSceneImpl(vs);
+    return static_cast<Writer*>(this)->write(vs);
   }
   virtual bool writeGeometry(const COLLADAFW::Geometry* g) {
-    return static_cast<Writer*>(this)->geometryImpl(g);
+    return static_cast<Writer*>(this)->write(g);
   }
 
   virtual void finish() {
@@ -90,22 +90,22 @@ public:
   void cancelImpl(const COLLADAFW::String&) {}
   void startImpl() {}
 
-  bool globalAssetImpl(const COLLADAFW::FileInfo*) { return true; }
-  bool sceneImpl(const COLLADAFW::Scene*) { return true; }
-  bool libraryNodesImpl(const COLLADAFW::LibraryNodes*) { return true; }
-  bool materialImpl(const COLLADAFW::Material*) { return true; }
-  bool effectImpl(const COLLADAFW::Effect*) { return true; }
-  bool cameraImpl(const COLLADAFW::Camera*) { return true; }
-  bool imageImpl(const COLLADAFW::Image*) { return true; }
-  bool lightImpl(const COLLADAFW::Light*) { return true; }
-  bool animationImpl(const COLLADAFW::Animation*) { return true; }
-  bool animationListImpl(const COLLADAFW::AnimationList*) { return true; }
-  bool skinControllerDataImpl(const COLLADAFW::SkinControllerData*) { return true; }
-  bool controllerImpl(const COLLADAFW::Controller*) { return true; }
-  bool formulasImpl(const COLLADAFW::Formulas*) { return true; }
-  bool kinematicsSceneImpl(const COLLADAFW::KinematicsScene*) { return true; }
-  bool visualSceneImpl(const COLLADAFW::VisualScene*) { return true; }
-  bool geometryImpl(const COLLADAFW::Geometry* g) { return true; }
+  bool write(const COLLADAFW::FileInfo*) { return true; }
+  bool write(const COLLADAFW::Scene*) { return true; }
+  bool write(const COLLADAFW::LibraryNodes*) { return true; }
+  bool write(const COLLADAFW::Material*) { return true; }
+  bool write(const COLLADAFW::Effect*) { return true; }
+  bool write(const COLLADAFW::Camera*) { return true; }
+  bool write(const COLLADAFW::Image*) { return true; }
+  bool write(const COLLADAFW::Light*) { return true; }
+  bool write(const COLLADAFW::Animation*) { return true; }
+  bool write(const COLLADAFW::AnimationList*) { return true; }
+  bool write(const COLLADAFW::SkinControllerData*) { return true; }
+  bool write(const COLLADAFW::Controller*) { return true; }
+  bool write(const COLLADAFW::Formulas*) { return true; }
+  bool write(const COLLADAFW::KinematicsScene*) { return true; }
+  bool write(const COLLADAFW::VisualScene*) { return true; }
+  bool write(const COLLADAFW::Geometry* g) { return true; }
   void finishImpl() {}
 
   // no default impl for finish(); we expect all subclasses to supply

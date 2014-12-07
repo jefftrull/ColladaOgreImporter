@@ -32,8 +32,13 @@ class MeshWriter : public Writer<MeshWriter> {
   Ogre::MeshPtr getMesh() { return m_mesh; }
 
   // ColladaWriter methods we will implement
-  bool geometryImpl(const COLLADAFW::Geometry*);
+  bool write(const COLLADAFW::Geometry*);
   void finishImpl();
+
+  // pick up overloads from Writer
+  using Writer<MeshWriter>::write;
+  // and WriterBase
+  using WriterBase<Writer<MeshWriter>>::write;
 
   // a replacement for finish(), for the the first pass only
   void pass1Finish();
@@ -71,21 +76,22 @@ class MeshWriter : public Writer<MeshWriter> {
 
     // forward everything except geometry
     void start() { m_converter->start(); }
-    bool globalAssetImpl(const COLLADAFW::FileInfo* fi) { return m_converter->globalAssetImpl(fi); }
-    bool sceneImpl(const COLLADAFW::Scene* s) { return m_converter->sceneImpl(s); }
-    bool libraryNodesImpl(const COLLADAFW::LibraryNodes* ln) { return m_converter->libraryNodesImpl(ln); }
-    bool materialImpl(const COLLADAFW::Material* m) { return m_converter->materialImpl(m); }
-    bool effectImpl(const COLLADAFW::Effect* e) { return m_converter->effectImpl(e); }
-    bool cameraImpl(const COLLADAFW::Camera* c) { return m_converter->cameraImpl(c); }
-    bool imageImpl(const COLLADAFW::Image* i) { return m_converter->imageImpl(i); }
-    bool lightImpl(const COLLADAFW::Light* l) { return m_converter->lightImpl(l); }
-    bool animationImpl(const COLLADAFW::Animation* a) { return m_converter->animationImpl(a); }
-    bool animationListImpl(const COLLADAFW::AnimationList* al) { return m_converter->animationListImpl(al); }
-    bool skinControllerDataImpl(const COLLADAFW::SkinControllerData* d) { return m_converter->skinControllerDataImpl(d); }
-    bool controllerImpl(const COLLADAFW::Controller* c) { return m_converter->controllerImpl(c); }
-    bool formulasImpl(const COLLADAFW::Formulas* f) { return m_converter->formulasImpl(f); }
-    bool kinematicsSceneImpl(const COLLADAFW::KinematicsScene* s) { return m_converter->kinematicsSceneImpl(s); }
-    bool visualSceneImpl(const COLLADAFW::VisualScene* vs) { return m_converter->visualSceneImpl(vs); }
+    using WriterBase<OgreMeshDispatchPass1>::write;
+    bool write(const COLLADAFW::FileInfo* fi) { return m_converter->write(fi); }
+    bool write(const COLLADAFW::Scene* s) { return m_converter->write(s); }
+    bool write(const COLLADAFW::LibraryNodes* ln) { return m_converter->write(ln); }
+    bool write(const COLLADAFW::Material* m) { return m_converter->write(m); }
+    bool write(const COLLADAFW::Effect* e) { return m_converter->write(e); }
+    bool write(const COLLADAFW::Camera* c) { return m_converter->write(c); }
+    bool write(const COLLADAFW::Image* i) { return m_converter->write(i); }
+    bool write(const COLLADAFW::Light* l) { return m_converter->write(l); }
+    bool write(const COLLADAFW::Animation* a) { return m_converter->write(a); }
+    bool write(const COLLADAFW::AnimationList* al) { return m_converter->write(al); }
+    bool write(const COLLADAFW::SkinControllerData* d) { return m_converter->write(d); }
+    bool write(const COLLADAFW::Controller* c) { return m_converter->write(c); }
+    bool write(const COLLADAFW::Formulas* f) { return m_converter->write(f); }
+    bool write(const COLLADAFW::KinematicsScene* s) { return m_converter->write(s); }
+    bool write(const COLLADAFW::VisualScene* vs) { return m_converter->write(vs); }
     void finishImpl() { m_converter->pass1Finish(); }
 
   };
@@ -96,8 +102,9 @@ class MeshWriter : public Writer<MeshWriter> {
     OgreMeshDispatchPass2(MeshWriter* converter) : m_converter(converter) {}
 
     // Forward only writeGeometry and finish
-    bool geometryImpl(const COLLADAFW::Geometry* g) {
-      return m_converter->geometryImpl(g);
+    using WriterBase<OgreMeshDispatchPass2>::write;
+    bool write(const COLLADAFW::Geometry* g) {
+      return m_converter->write(g);
     }
     void finishImpl() { m_converter->finishImpl(); }
   };

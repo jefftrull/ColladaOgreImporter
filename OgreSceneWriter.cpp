@@ -36,12 +36,12 @@ OgreCollada::SceneWriter::SceneWriter(Ogre::SceneManager* mgr,
 
 OgreCollada::SceneWriter::~SceneWriter() {}
 
-bool OgreCollada::SceneWriter::cameraImpl(const COLLADAFW::Camera* camera) {
+bool OgreCollada::SceneWriter::write(const COLLADAFW::Camera* camera) {
   m_cameras.insert(std::make_pair(camera->getUniqueId(), *camera));
   return true;
 }
 
-bool OgreCollada::SceneWriter::geometryImpl(const COLLADAFW::Geometry* g) {
+bool OgreCollada::SceneWriter::write(const COLLADAFW::Geometry* g) {
 
   if (m_calculateGeometryStats) {
     // remember this for later use

@@ -72,8 +72,11 @@ class Writer : public WriterBase<Writer<Derived>> {
 
  public:
 
+  // pick up defaults
+  using WriterBase<Writer<Derived>>::write;
+
   // define implementations for parent class's virtual functions
-  bool globalAssetImpl(
+  bool write(
     const FileInfo* fi) {
     enum FileInfo::UpAxisType up = fi->getUpAxisType();
     // set transform of entire imported scene to match Ogre (Y-up)
@@ -108,7 +111,7 @@ class Writer : public WriterBase<Writer<Derived>> {
     return true;
   }
 
-  bool libraryNodesImpl(const COLLADAFW::LibraryNodes* lnodes) {
+  bool write(const COLLADAFW::LibraryNodes* lnodes) {
     for (int i = 0, count = lnodes->getNodes().getCount(); i < count; ++i) {
       const COLLADAFW::Node* n = lnodes->getNodes()[i];
       // record this name and unique ID
@@ -124,13 +127,13 @@ class Writer : public WriterBase<Writer<Derived>> {
     return true;
   }
 
-  bool materialImpl(const COLLADAFW::Material* m) {
+  bool write(const COLLADAFW::Material* m) {
     m_materials.insert(std::make_pair(m->getUniqueId(), std::make_pair(m->getName(), m->getInstantiatedEffect())));
 
     return true;
   }
 
-  bool effectImpl(const COLLADAFW::Effect* e) {
+  bool write(const COLLADAFW::Effect* e) {
     COLLADAFW::Color c = e->getStandardColor();
     for (int i = 0, count = e->getCommonEffects().getCount(); i < count; ++i) {
       const COLLADAFW::EffectCommon* ce = e->getCommonEffects()[i];
@@ -141,9 +144,9 @@ class Writer : public WriterBase<Writer<Derived>> {
     return true;
   }
 
-  bool cameraImpl(const COLLADAFW::Camera*) { return true; }
+  bool write(const COLLADAFW::Camera*) { return true; }
 
-  bool imageImpl(const COLLADAFW::Image* i) {
+  bool write(const COLLADAFW::Image* i) {
     // these are basically texture jpegs... they contain a file path
     if (i->getSourceType() == COLLADAFW::Image::SOURCE_TYPE_URI) {
       Ogre::String image_rel_path = COLLADABU::URI::uriDecode(i->getImageURI().getURIString());
@@ -169,7 +172,7 @@ class Writer : public WriterBase<Writer<Derived>> {
     return true;
   }
 
-  bool visualSceneImpl(const COLLADAFW::VisualScene* vscene) {
+  bool write(const COLLADAFW::VisualScene* vscene) {
     // store those root nodes for later processing
     for (int i = 0, count = vscene->getRootNodes().getCount(); i < count; ++i) {
       m_vsRootNodes.push_back(vscene->getRootNodes()[i]);
@@ -178,9 +181,9 @@ class Writer : public WriterBase<Writer<Derived>> {
     return true;
   }
 
-  // child classes will implement finishImpl() and geometryImpl()
-  bool geometryImpl(const COLLADAFW::Geometry* g) {
-    return static_cast<Derived*>(this)->geometryImpl(g);
+  // child classes will implement finishImpl() and write(geometry*)
+  bool write(const COLLADAFW::Geometry* g) {
+    return static_cast<Derived*>(this)->write(g);
   }
   void finishImpl() {
     static_cast<Derived*>(this)->finishImpl();
