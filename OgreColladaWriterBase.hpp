@@ -19,10 +19,36 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 namespace OgreCollada {
 
+namespace detail {
+
+// some syntactic sugar for providing default implementations of write() visitors
+template<class Attribute, class... Attributes>
+struct DefaultImpl : public DefaultImpl<Attributes...> {
+  using DefaultImpl<Attributes...>::write;  // pick up other versions of "write"
+  bool write(Attribute const*) { return true; }
+};
+
+template<class Attribute>
+struct DefaultImpl<Attribute> {
+  bool write(Attribute const*) { return true; }
+};
+
+typedef DefaultImpl<COLLADAFW::Camera, COLLADAFW::FileInfo, COLLADAFW::Scene,
+                    COLLADAFW::LibraryNodes, COLLADAFW::Material, COLLADAFW::Effect,
+                    COLLADAFW::Image, COLLADAFW::Light, COLLADAFW::Animation,
+                    COLLADAFW::AnimationList, COLLADAFW::SkinControllerData,
+                    COLLADAFW::Controller, COLLADAFW::Formulas,
+                    COLLADAFW::KinematicsScene, COLLADAFW::VisualScene,
+                    COLLADAFW::Geometry> AllMethodsDefault;
+
+}
+
 // Base class to supply a default implementation for (almost) all pure virtual methods
 // Actual work is delegated to derived classes
 template<class Writer>
-class WriterBase : public COLLADAFW::IWriter {
+class WriterBase : public COLLADAFW::IWriter,
+                   public detail::AllMethodsDefault {
+
 public:
   virtual      ~WriterBase() {}
 
@@ -90,22 +116,8 @@ public:
   void cancelImpl(const COLLADAFW::String&) {}
   void startImpl() {}
 
-  bool write(const COLLADAFW::FileInfo*) { return true; }
-  bool write(const COLLADAFW::Scene*) { return true; }
-  bool write(const COLLADAFW::LibraryNodes*) { return true; }
-  bool write(const COLLADAFW::Material*) { return true; }
-  bool write(const COLLADAFW::Effect*) { return true; }
-  bool write(const COLLADAFW::Camera*) { return true; }
-  bool write(const COLLADAFW::Image*) { return true; }
-  bool write(const COLLADAFW::Light*) { return true; }
-  bool write(const COLLADAFW::Animation*) { return true; }
-  bool write(const COLLADAFW::AnimationList*) { return true; }
-  bool write(const COLLADAFW::SkinControllerData*) { return true; }
-  bool write(const COLLADAFW::Controller*) { return true; }
-  bool write(const COLLADAFW::Formulas*) { return true; }
-  bool write(const COLLADAFW::KinematicsScene*) { return true; }
-  bool write(const COLLADAFW::VisualScene*) { return true; }
-  bool write(const COLLADAFW::Geometry* g) { return true; }
+  using detail::AllMethodsDefault::write;
+
   void finishImpl() {}
 
   // no default impl for finish(); we expect all subclasses to supply
