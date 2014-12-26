@@ -14,9 +14,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #ifndef OGRE_COLLADA_WRITER_BASE_H
 #define OGRE_COLLADA_WRITER_BASE_H
 
-#include <OgreLogManager.h>
-#include <boost/lexical_cast.hpp>
-
 namespace OgreCollada {
 
 namespace detail {

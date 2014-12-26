@@ -20,11 +20,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <boost/lexical_cast.hpp>
 
 
-#include <OgreString.h>
-#include <OgreQuaternion.h>
-#include <OgreVector3.h>
-#include <OgreMatrix4.h>
-#include <OgreCommon.h>
 #include <OgreMeshManager.h>
 #include <OgrePass.h>
 #include <OgreTechnique.h>
@@ -38,7 +33,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <OgreUserObjectBindings.h>
 
 #include <COLLADAFWIWriter.h>
-#include <COLLADAFWMaterialBinding.h>
 #include <COLLADAFWFileInfo.h>
 #include <COLLADAFWColorOrTexture.h>
 #include <COLLADAFWSampler.h>
