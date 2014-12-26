@@ -115,8 +115,6 @@ public:
 
   using detail::AllMethodsDefault::write;
 
-  void finishImpl() {}
-
   // no default impl for finish(); we expect all subclasses to supply
 
 };
