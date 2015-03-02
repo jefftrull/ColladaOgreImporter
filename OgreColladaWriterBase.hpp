@@ -23,6 +23,8 @@ template<class Attribute, class... Attributes>
 struct DefaultImpl : public DefaultImpl<Attributes...> {
   using DefaultImpl<Attributes...>::write;  // pick up other versions of "write"
   bool write(Attribute const*) { return true; }
+protected:
+  DefaultImpl() = default;     // this class is for base class use only
 };
 
 template<class Attribute>
@@ -46,66 +48,69 @@ template<class Writer>
 class WriterBase : public COLLADAFW::IWriter,
                    public detail::AllMethodsDefault {
 
+protected:
+  WriterBase() = default;
+
 public:
   virtual      ~WriterBase() {}
 
   // define required IWriter methods and delegate to derived via CRTP
-  virtual void cancel(const COLLADAFW::String& s) {
+  virtual void cancel(const COLLADAFW::String& s) override {
     static_cast<Writer*>(this)->cancelImpl(s);
   }
-  virtual void start() {
+  virtual void start() override {
     static_cast<Writer*>(this)->startImpl();
   }
-  virtual bool writeGlobalAsset(const COLLADAFW::FileInfo* fi) {
+  virtual bool writeGlobalAsset(const COLLADAFW::FileInfo* fi) override {
     return static_cast<Writer*>(this)->write(fi);
   }
-  virtual bool writeScene(const COLLADAFW::Scene* s) {
+  virtual bool writeScene(const COLLADAFW::Scene* s) override {
     return static_cast<Writer*>(this)->write(s);
   }
-  virtual bool writeLibraryNodes(const COLLADAFW::LibraryNodes* ln) {
+  virtual bool writeLibraryNodes(const COLLADAFW::LibraryNodes* ln) override {
     return static_cast<Writer*>(this)->write(ln);
   }
-  virtual bool writeMaterial(const COLLADAFW::Material* m) {
+  virtual bool writeMaterial(const COLLADAFW::Material* m) override {
     return static_cast<Writer*>(this)->write(m);
   }
-  virtual bool writeEffect(const COLLADAFW::Effect* e) {
+  virtual bool writeEffect(const COLLADAFW::Effect* e) override {
     return static_cast<Writer*>(this)->write(e);
   }
-  virtual bool writeCamera(const COLLADAFW::Camera* c) {
+  virtual bool writeCamera(const COLLADAFW::Camera* c) override {
     return static_cast<Writer*>(this)->write(c);
   }
-  virtual bool writeImage(const COLLADAFW::Image* i) {
+  virtual bool writeImage(const COLLADAFW::Image* i) override {
     return static_cast<Writer*>(this)->write(i);
   }
-  virtual bool writeLight(const COLLADAFW::Light* l) {
+  virtual bool writeLight(const COLLADAFW::Light* l) override {
     return static_cast<Writer*>(this)->write(l);
   }
-  virtual bool writeAnimation(const COLLADAFW::Animation* a) {
+  virtual bool writeAnimation(const COLLADAFW::Animation* a) override {
     return static_cast<Writer*>(this)->write(a);
   }
-  virtual bool writeAnimationList(const COLLADAFW::AnimationList* al) {
+  virtual bool writeAnimationList(const COLLADAFW::AnimationList* al) override {
     return static_cast<Writer*>(this)->write(al);
   }
-  virtual bool writeSkinControllerData(const COLLADAFW::SkinControllerData* scd) {
+  virtual bool writeSkinControllerData(const COLLADAFW::SkinControllerData* scd) override {
     return static_cast<Writer*>(this)->write(scd);
   }
-  virtual bool writeController(const COLLADAFW::Controller* c) {
+  virtual bool writeController(const COLLADAFW::Controller* c) override {
     return static_cast<Writer*>(this)->write(c);
   }
-  virtual bool writeFormulas(const COLLADAFW::Formulas* f) {
+  virtual bool writeFormulas(const COLLADAFW::Formulas* f) override {
     return static_cast<Writer*>(this)->write(f);
   }
-  virtual bool writeKinematicsScene(const COLLADAFW::KinematicsScene* ks) {
+  virtual bool writeKinematicsScene(const COLLADAFW::KinematicsScene* ks) override {
     return static_cast<Writer*>(this)->write(ks);
   }
-  virtual bool writeVisualScene(const COLLADAFW::VisualScene* vs) {
+  virtual bool writeVisualScene(const COLLADAFW::VisualScene* vs) override {
     return static_cast<Writer*>(this)->write(vs);
   }
-  virtual bool writeGeometry(const COLLADAFW::Geometry* g) {
+  virtual bool writeGeometry(const COLLADAFW::Geometry* g) override {
     return static_cast<Writer*>(this)->write(g);
   }
 
-  virtual void finish() {
+  virtual void finish() override {
     static_cast<Writer*>(this)->finishImpl();
   }
 
