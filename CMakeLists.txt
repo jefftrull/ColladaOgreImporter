@@ -56,6 +56,8 @@ find_package_handle_standard_args(OpenCollada REQUIRED_VARS
 
 if ((DEFINED OGRE_HOME) AND (EXISTS ${OGRE_HOME}/CMake/Packages))
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${OGRE_HOME}/CMake/Packages ${OGRE_HOME}/CMake/Utils)
+elseif ((DEFINED OGRE_HOME) AND (EXISTS ${OGRE_HOME}/cmake/modules))
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${OGRE_HOME}/cmake/modules ${OGRE_HOME}/CMake/Utils)
 elseif((DEFINED $ENV{OGRE_HOME}) AND (EXISTS $ENV{OGRE_HOME}/CMake/Packages))
   # Ogre's cmake script also accepts an environment variable of the same name
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{OGRE_HOME}/CMake/Packages)
