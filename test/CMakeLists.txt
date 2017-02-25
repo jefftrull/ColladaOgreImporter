@@ -31,7 +31,7 @@ add_custom_target(cube_data ALL DEPENDS cube.dae)
 
 # define tests themselves
 add_executable(cube_test cube_test.cpp)
-add_test(cube_test cube_test cube.dae)
+add_test(cube_test cube_test -- cube.dae)
 target_link_libraries(cube_test ${APPLIBS})
 #add_executable(tetra_test tetra_test.cpp)
 
