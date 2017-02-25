@@ -13,6 +13,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include <utility>
 #include <iostream>
+#include <numeric>
 
 // my idea of a really really minimal viewer app
 
