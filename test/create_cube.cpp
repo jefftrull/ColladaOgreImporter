@@ -68,7 +68,7 @@ struct CubeExporter : public COLLADASW::LibraryGeometries {
     // the actual faces themselves
     COLLADASW::Triangles tris(mSW);
     tris.setMaterial(COLLADABU::NativeString("CubeColor"));
-    tris.setCount((uint)6*2);         // two triangles per side
+    tris.setCount(6*2);         // two triangles per side
 
     tris.getInputList().push_back(COLLADASW::Input(COLLADASW::InputSemantic::VERTEX,
 						   COLLADASW::URI(EMPTY_STRING,
