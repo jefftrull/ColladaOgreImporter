@@ -31,7 +31,16 @@ add_custom_target(cube_data ALL DEPENDS cube.dae)
 
 # define tests themselves
 add_executable(cube_test cube_test.cpp)
-add_test(cube_test cube_test -- cube.dae)
+add_test(cube_test cube_test cube.dae)
 target_link_libraries(cube_test ${APPLIBS})
-#add_executable(tetra_test tetra_test.cpp)
+
+# Note that suitable ogre.cfg and plugins.cfg must be in place for this to pass
+# And their _d variants too, if on Windows...
+
+if (WIN32)
+  # ensure test can find plugins
+  set_tests_properties( cube_test PROPERTIES
+    ENVIRONMENT PATH=${OGRE_PLUGIN_DIR_DBG} )
+endif()
+
 
