@@ -33,15 +33,28 @@ find_path(COLLADABASE_INCLUDE_DIR COLLADABUPlatform.h HINTS ${COLLADA_ROOT}/COLL
 find_path(COLLADASW_INCLUDE_DIR COLLADASWStreamWriter.h HINTS ${COLLADA_ROOT}/COLLADAStreamWriter/include)
 find_path(COLLADA_GENERATED_SAX_INCLUDE_DIR GeneratedSaxParser.h HINTS ${COLLADA_ROOT}/GeneratedSaxParser/include)
 # libraries
-find_library(COLLADABU_LIB OpenCOLLADABaseUtils HINTS ${COLLADA_ROOT}/build/lib)
-find_library(COLLADAFW_LIB OpenCOLLADAFramework HINTS ${COLLADA_ROOT}/build/lib)
-find_library(COLLADASAX_LIB OpenCOLLADASaxFrameworkLoader HINTS ${COLLADA_ROOT}/build/lib)
-find_library(COLLADASAXP_LIB GeneratedSaxParser HINTS ${COLLADA_ROOT}/build/lib)
-find_library(COLLADASW_LIB OpenCOLLADAStreamWriter HINTS ${COLLADA_ROOT}/build/lib)
-find_library(COLLADABF_LIB buffer HINTS ${COLLADA_ROOT}/build/lib)
-find_library(F2A_LIB ftoa HINTS ${COLLADA_ROOT}/build/lib)
-find_library(UTF_LIB UTF HINTS ${COLLADA_ROOT}/build/lib)
-find_library(MATHML_LIB MathMLSolver ${COLLADA_ROOT}/build/lib)
+set( COLLADA_LIB_HINT "${COLLADA_ROOT}/build/lib" )
+# For multi-configuration generators you will get an extra dir for the configuration
+if( CMAKE_GENERATOR MATCHES "^((Visual Studio)|Xcode)" )
+  set( COLLADA_LIB_HINT "${COLLADA_LIB_HINT}/Debug" )     # should really use one per config...
+endif()
+find_library(COLLADABU_LIB OpenCOLLADABaseUtils HINTS ${COLLADA_LIB_HINT} )
+find_library(COLLADAFW_LIB OpenCOLLADAFramework HINTS ${COLLADA_LIB_HINT} )
+find_library(COLLADASAX_LIB OpenCOLLADASaxFrameworkLoader HINTS ${COLLADA_LIB_HINT} )
+find_library(COLLADASAXP_LIB GeneratedSaxParser HINTS ${COLLADA_LIB_HINT} )
+find_library(COLLADASW_LIB OpenCOLLADAStreamWriter HINTS ${COLLADA_LIB_HINT} )
+find_library(COLLADABF_LIB buffer HINTS ${COLLADA_LIB_HINT} )
+find_library(F2A_LIB ftoa HINTS ${COLLADA_LIB_HINT} )
+find_library(UTF_LIB UTF HINTS ${COLLADA_LIB_HINT} )
+find_library(MATHML_LIB MathMLSolver ${COLLADA_LIB_HINT} )
+# On Windows also get libxml2 and pcre from OpenCOLLADA
+if ( CMAKE_HOST_WIN32 )
+  find_library( XML2_LIB xml HINTS ${COLLADA_LIB_HINT} )
+  find_library( PCRE_LIB pcre HINTS ${COLLADA_LIB_HINT} )
+else()
+  set( XML2_LIB xml2 )
+  set( PCRE_LIB pcre )
+endif()
 
 # fail if not found
 include(FindPackageHandleStandardArgs)
@@ -65,6 +78,10 @@ elseif((DEFINED $ENV{OGRE_HOME}) AND (EXISTS $ENV{OGRE_HOME}/CMake/Packages))
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{OGRE_HOME}/CMake/Packages)
 endif()
 
+if (WIN32)
+  set(Boost_USE_STATIC_LIBS ON)
+endif()
+
 find_package(Boost REQUIRED filesystem system regex)
 # Ogre's find_package appears to clobber ${Boost_LIBRARIES}
 set(BOOST_LIB_FILES ${Boost_LIBRARIES})
@@ -80,8 +97,12 @@ endif()
 
 # make a library out of the Collada stuff
 add_library(collada_importer OgreMeshWriter.cpp OgreSceneWriter.cpp OgreColladaWriter.cpp OgreColladaSaxLoader.cpp)
-# assume we have xml2 and pcre (definitely available on Ubuntu) but others come from OpenCollada dir
-target_link_libraries(collada_importer ${COLLADASAX_LIB} ${COLLADASAXP_LIB} ${COLLADAFW_LIB} ${COLLADABU_LIB} ${UTF_LIB} xml2 pcre ${MATHML_LIB})
+
+target_link_libraries(collada_importer ${COLLADASAX_LIB} ${COLLADASAXP_LIB} ${COLLADAFW_LIB} ${COLLADABU_LIB} ${UTF_LIB} ${XML2_LIB} ${PCRE_LIB} ${MATHML_LIB} )
+if (WIN32)
+  # libxml2 needs this
+  target_link_libraries(collada_importer Ws2_32 )
+endif()
 
 # data conversion app
 add_executable(c2mesh collada2ogre.cpp)

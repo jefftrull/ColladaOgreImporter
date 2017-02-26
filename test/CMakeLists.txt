@@ -22,7 +22,7 @@ include_directories(..)
 include_directories(SYSTEM ${COLLADASW_INCLUDE_DIR})
 
 # define data creation executables and their result files
-set(CREATE_LIBS ${COLLADASW_LIB} ${COLLADABF_LIB} ${UTF_LIB} ${F2A_LIB} ${COLLADABU_LIB} pcre)
+set(CREATE_LIBS ${COLLADASW_LIB} ${COLLADABF_LIB} ${UTF_LIB} ${F2A_LIB} ${COLLADABU_LIB} ${PCRE_LIB} )
 
 add_executable(create_cube create_cube.cpp)
 target_link_libraries(create_cube ${CREATE_LIBS})
