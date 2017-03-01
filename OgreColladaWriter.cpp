@@ -282,7 +282,8 @@ bool OgreCollada::Writer::addGeometry(const COLLADAFW::Geometry* g,       // inp
   for (int i = 0, count = cmesh->getMeshPrimitives().getCount(); i < count; ++i) {
     const COLLADAFW::MeshPrimitive& prim = *(cmesh->getMeshPrimitives()[i]);
     if ((prim.getPrimitiveType() != COLLADAFW::MeshPrimitive::TRIANGLES) &&
-	(prim.getPrimitiveType() != COLLADAFW::MeshPrimitive::LINES)) {
+	(prim.getPrimitiveType() != COLLADAFW::MeshPrimitive::LINES) &&
+        (prim.getPrimitiveType() != COLLADAFW::MeshPrimitive::POLYLIST)) {
       // BOZO get proper Ogre error message mechanism here
       LOG_DEBUG("Mesh primitive type " + Ogre::StringConverter::toString(prim.getPrimitiveType()) + " is not currently supported");
       continue;
@@ -290,6 +291,21 @@ bool OgreCollada::Writer::addGeometry(const COLLADAFW::Geometry* g,       // inp
     if (!cmesh->getPositions().getValuesCount()) {
       LOG_DEBUG("Mesh primitive has no positions; this is strange (and currently unsupported), skipping");
       continue;
+    }
+
+    if (prim.getPrimitiveType() == COLLADAFW::MeshPrimitive::POLYLIST) {
+      // check vertex counts to ensure they are all actually triangles
+      bool all_triangles = true;
+      for (size_t i = 0; i < prim.getGroupedVertexElementsCount(); ++i) {
+        if (prim.getGroupedVerticesVertexCount(i) != 3) {
+          all_triangles = false;
+          LOG_DEBUG("a polylist mesh primitive contains a polygon that is not a triangle, which is unsupported - skipping");
+          break;
+        }
+      }
+      if (!all_triangles) {
+        continue;
+      }
     }
 
     Ogre::String matname("BaseWhiteNoLighting");
@@ -321,10 +337,13 @@ bool OgreCollada::Writer::addGeometry(const COLLADAFW::Geometry* g,       // inp
     }
 
 
-    if (prim.getPrimitiveType() == COLLADAFW::MeshPrimitive::TRIANGLES)
+    if ((prim.getPrimitiveType() == COLLADAFW::MeshPrimitive::TRIANGLES) ||
+        (prim.getPrimitiveType() == COLLADAFW::MeshPrimitive::POLYLIST)) {
       manobj->begin(matname, Ogre::RenderOperation::OT_TRIANGLE_LIST);
-    else
+    }
+    else {
       manobj->begin(matname, Ogre::RenderOperation::OT_LINE_LIST);
+    }
  
     // Reorder the vertex buffer for this submesh
     // basically we're going to create a vertex buffer and a set of indices on the fly
@@ -438,7 +457,9 @@ bool OgreCollada::Writer::addGeometry(const COLLADAFW::Geometry* g,       // inp
     }
 
     // now the indices
-    if ((prim.getPrimitiveType() == COLLADAFW::MeshPrimitive::TRIANGLES) && hasNormals) {
+    if (((prim.getPrimitiveType() == COLLADAFW::MeshPrimitive::TRIANGLES) ||
+         (prim.getPrimitiveType() == COLLADAFW::MeshPrimitive::POLYLIST))
+         && hasNormals) {
       // output indices with a possibility of correcting winding order
       for (int tri = 0, tcount = indices.size() / 3; tri < tcount; ++tri) {
 	// get the three vertices defining this triangle
@@ -485,10 +506,13 @@ bool OgreCollada::Writer::addGeometry(const COLLADAFW::Geometry* g,       // inp
     }
     if (m_calculateGeometryStats) {
       // update stats
-      if (prim.getPrimitiveType() == COLLADAFW::MeshPrimitive::TRIANGLES)
+      if ((prim.getPrimitiveType() == COLLADAFW::MeshPrimitive::TRIANGLES) ||
+          (prim.getPrimitiveType() == COLLADAFW::MeshPrimitive::POLYLIST)) {
 	triangles += (indices.size() / 3);
-      else
+      }
+      else {
 	lines += (indices.size() / 2);
+      }
     }
     manobj->end();
     valid_submesh = true;
