@@ -55,7 +55,7 @@ OgreCollada::Writer::Writer(const Ogre::String& dir, const char* dotfn,
 				     bool checkNormals, bool calculateGeometryStats) :
   m_dir(dir), m_dotfn(dotfn),
   m_checkNormals(checkNormals), m_calculateGeometryStats(calculateGeometryStats),
-  m_sketchUpWorkarounds(false) {
+  m_transparencyWorkarounds(false) {
   // prepare to load textures from the specified directory
   if (boost::filesystem::exists(m_dir)) {
     LOG_DEBUG("adding directory " + m_dir + " to resources");
@@ -142,12 +142,13 @@ void OgreCollada::Writer::createMaterials() {
             (Ogre::Real)ce.getOpacity().getColor().getGreen(),
             (Ogre::Real)ce.getOpacity().getColor().getBlue(),
             (Ogre::Real)ce.getOpacity().getColor().getAlpha());
-          // SketchUp prior to 7.1 inverts transparency.  this is hard to properly fix because the opacity color
+          // SketchUp prior to 7.1 inverts transparency, as do many versions of the FBX exporter
+          // This is hard to properly fix because the opacity color
           // values are calculated using the transparent tag's type attribute, the transparent color, and
           // the transparency value.  However for many cases I have seen, we have transparent color = 1 1 1 1,
           // type = A_ONE (the default) and transparency = (incorrectly) 0.0000.  In that case using opacity
           // 1 1 1 1 (instead of calculated 0 0 0 0) is correct.
-          if (m_sketchUpWorkarounds &&
+          if (m_transparencyWorkarounds &&
               (opacity.r == 0.0) && (opacity.g == 0.0) && (opacity.b == 0.0) && (opacity.a == 0.0)) {
             opacity = Ogre::ColourValue::White;
           }
@@ -222,8 +223,11 @@ bool OgreCollada::Writer::writeGlobalAsset(const FileInfo* fi) {
         int min = std::stoi(comps[2]);
         if ((maj < 7) || ((maj == 7) && (min < 1))) {
           // Prior to version 7.1 SketchUp had a number of Collada export bugs
-          m_sketchUpWorkarounds = true;
+          m_transparencyWorkarounds = true;
         }
+      } else if (values[i]->second == "FBX COLLADA exporter") {
+        // FBX (no version string, sadly)
+        m_transparencyWorkarounds = true;
       }
     }
   }
