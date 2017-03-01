@@ -151,7 +151,7 @@ class Writer : public WriterBase {
 
   std::vector<Ogre::MaterialPtr> m_ogreMaterials;
 
-  bool m_sketchUpWorkarounds;
+  bool m_transparencyWorkarounds;
 
   std::vector<COLLADAFW::UniqueId> m_unculledEffects;
 
