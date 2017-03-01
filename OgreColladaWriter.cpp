@@ -143,14 +143,12 @@ void OgreCollada::Writer::createMaterials() {
             (Ogre::Real)ce.getOpacity().getColor().getBlue(),
             (Ogre::Real)ce.getOpacity().getColor().getAlpha());
           // SketchUp prior to 7.1 inverts transparency, as do many versions of the FBX exporter
-          // This is hard to properly fix because the opacity color
-          // values are calculated using the transparent tag's type attribute, the transparent color, and
-          // the transparency value.  However for many cases I have seen, we have transparent color = 1 1 1 1,
-          // type = A_ONE (the default) and transparency = (incorrectly) 0.0000.  In that case using opacity
-          // 1 1 1 1 (instead of calculated 0 0 0 0) is correct.
-          if (m_transparencyWorkarounds &&
-              (opacity.r == 0.0) && (opacity.g == 0.0) && (opacity.b == 0.0) && (opacity.a == 0.0)) {
-            opacity = Ogre::ColourValue::White;
+          // I'm not certain this is correct in all cases as there is opaque mode to consider
+          if (m_transparencyWorkarounds) {
+            opacity.r = 1.0 - opacity.r;
+            opacity.g = 1.0 - opacity.g;
+            opacity.b = 1.0 - opacity.b;
+            opacity.a = 1.0 - opacity.a;
           }
         }
 
@@ -169,16 +167,19 @@ void OgreCollada::Writer::createMaterials() {
 	if (ce.getShininess().getType() == COLLADAFW::FloatOrParam::FLOAT)
 	  pass->setShininess(ce.getShininess().getFloatValue());
 
-	if (transparency && !ce.getDiffuse().isColor())
-	  // Trying to reverse-engineer the equations in the Collada spec
-	  // Using "modulate" (the default) with an initial color the same as the opacity appears IMO
-	  // to match the equations for the case where there is only a transparent texture
-	  // note that OpenCollada precalculates the channel blending factors for you as part of
-	  // the returned opacity color, so we don't need to know whether we're RGB_ZERO etc.
-	  // BOZO what to do if there is also a diffuse color, or if there is more than one texture?
-	  pass->setDiffuse(opacity);
-
 	if (transparency) {
+          if(ce.getDiffuse().isColor()) {
+            pass->setDiffuse(pass->getDiffuse().r, pass->getDiffuse().g, pass->getDiffuse().b,
+                             opacity.a * pass->getDiffuse().a);
+          } else {
+            // Trying to reverse-engineer the equations in the Collada spec
+            // Using "modulate" (the default) with an initial color the same as the opacity appears IMO
+            // to match the equations for the case where there is only a transparent texture
+            // note that OpenCollada precalculates the channel blending factors for you as part of
+            // the returned opacity color, so we don't need to know whether we're RGB_ZERO etc.
+            pass->setDiffuse(opacity);
+          }
+
 	  // as done by FCollada, IZ, etc.
 	  // for constant colors the alpha value of the color will determine transparency
 	  // from textures the alpha value comes from the "opacity" (<transparent> tag) color (above)
