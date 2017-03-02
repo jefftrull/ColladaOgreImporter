@@ -27,6 +27,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <OgreConfigFile.h>
 #include <OgreFrameListener.h>
 #include <OgreWindowEventUtilities.h>
+#include <OgreSceneNode.h>
 
 #include "OgreColladaSaxLoader.h"
 

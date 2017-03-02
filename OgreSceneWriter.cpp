@@ -22,10 +22,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <COLLADAFWNode.h>
 #include <COLLADAFWEffectCommon.h>
 
+#include <OgreLogManager.h>
 #include <OgreManualObject.h>
 #include <OgreMatrix4.h>
 #include <OgreEntity.h>
 #include <OgreSubEntity.h>
+#include <OgreMesh.h>
+#include <OgreSceneNode.h>
+#include <OgreCamera.h>
 
 #include "OgreSceneWriter.h"
 

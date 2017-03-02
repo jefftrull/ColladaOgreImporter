@@ -36,6 +36,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 // newer versions of Ogre do this already...
 class MWMatSerListener : public Ogre::MaterialSerializer::Listener {
 public:
+#if (OGRE_VERSION_MAJOR == 1) && (OGRE_VERSION_MINOR < 9)
   virtual void textureUnitStateEventRaised ( Ogre::MaterialSerializer* ser,
 					     Ogre::MaterialSerializer::SerializeEvent      event,
 					     bool&                     skip,
@@ -51,6 +52,7 @@ public:
       }
     }
   }
+#endif
 };
 
 // Ogre boilerplate for cross-platform main program
