@@ -15,8 +15,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <boost/lexical_cast.hpp>
 
 #include <COLLADABUURI.h>
-#include <COLLADAFWMatrix.h>
-#include <COLLADAFWLookat.h>
 #include <COLLADAFWCamera.h>
 #include <COLLADAFWMesh.h>
 #include <COLLADAFWNode.h>
@@ -166,58 +164,6 @@ void OgreCollada::SceneWriter::finish() {
   }
 }
 
-Ogre::Matrix4 OgreCollada::SceneWriter::computeTransformation(const COLLADAFW::Transformation* trans) {
-  if (trans->getTransformationType() == COLLADAFW::Transformation::LOOKAT) {
-    const COLLADAFW::Lookat& l = dynamic_cast<const COLLADAFW::Lookat&>(*trans);
-    const COLLADABU::Math::Vector3& eye = l.getEyePosition();
-    const COLLADABU::Math::Vector3& center = l.getInterestPointPosition();
-    const COLLADABU::Math::Vector3& up = l.getUpAxisDirection();
-
-    // Untransformed cameras look along the -Z axis and are positioned at the origin
-    // We need to generate a transformation that positions them at the "eye" position,
-    // with rotation changed from direction = (0, 0, -1) upaxis = (0, 1, 0) to
-    // direction = (center - eye) and upaxis = (up)
-
-    // turn these three vectors into an Ogre transformation matrix per recipe found in numerous places online:
-    Ogre::Vector3 eyev(eye.x, eye.y, eye.z);
-    Ogre::Vector3 centerv(center.x, center.y, center.z);
-    Ogre::Vector3 upv(up.x, up.y, up.z);
-    LOG_DEBUG("Got a LOOKAT transformation with eye position " + Ogre::StringConverter::toString(eyev) +
-              ", object position " + Ogre::StringConverter::toString(centerv) +
-              ", and up vector " + Ogre::StringConverter::toString(upv));
-
-    Ogre::Vector3 forwardv = (centerv - eyev).normalisedCopy();
-    Ogre::Vector3 sidev = forwardv.crossProduct(upv);
-    upv = sidev.crossProduct(forwardv);
-    LOG_DEBUG("calculated forward vector " + Ogre::StringConverter::toString(forwardv) +
-              ", side vector " + Ogre::StringConverter::toString(sidev) +
-              ", resultant up vector " + Ogre::StringConverter::toString(upv));
-      
-    // create an Ogre matrix from this data
-    // online sources describe how to reorient the entire scene to be displayed through the
-    // camera;  we are doing exactly the reverse, which is why this is a bit different:
-    return Ogre::Matrix4(sidev.x, upv.x, -forwardv.x, eye.x,
-                         sidev.y, upv.y, -forwardv.y, eye.y,
-                         sidev.z, upv.z, -forwardv.z, eye.z,
-                         0.0,     0.0,    0.0,        1.0);
-
-    // cross-check: original camera "forward" and "up" vectors (0, 0, -1) and (0, 1, 0)
-    // produce the right values when transformed by this matrix
-
-  } else if (trans->getTransformationType() == COLLADAFW::Transformation::MATRIX) {
-    const COLLADAFW::Matrix& m = dynamic_cast<const COLLADAFW::Matrix&>(*trans);
-    const COLLADABU::Math::Matrix4& mm = m.getMatrix();
-    // create an Ogre matrix from this data
-    return Ogre::Matrix4(mm.getElement(0, 0), mm.getElement(0, 1), mm.getElement(0, 2), mm.getElement(0, 3),
-                         mm.getElement(1, 0), mm.getElement(1, 1), mm.getElement(1, 2), mm.getElement(1, 3),
-                         mm.getElement(2, 0), mm.getElement(2, 1), mm.getElement(2, 2), mm.getElement(2, 3),
-                         mm.getElement(3, 0), mm.getElement(3, 1), mm.getElement(3, 2), mm.getElement(3, 3));
-  } else {
-    LOG_DEBUG("COLLADA WARNING: Scene node has non-matrix/lookat transformation - ignoring");
-    return Ogre::Matrix4::IDENTITY;
-  }
-}
-
 bool OgreCollada::SceneWriter::createSceneDFS(const COLLADAFW::Node* cn, Ogre::SceneNode* sn, const Ogre::String& prefix) {
   // General algorithm (assumes Ogre scene node is already created):
   // set transformation
@@ -227,10 +173,11 @@ bool OgreCollada::SceneWriter::createSceneDFS(const COLLADAFW::Node* cn, Ogre::S
 
   // handle this node's transformation matrix
   const COLLADAFW::TransformationPointerArray& tarr = cn->getTransformations();
-  if (tarr.getCount() > 1) {
-    LOG_DEBUG("COLLADA WARNING: Scene node has " + Ogre::StringConverter::toString(tarr.getCount()) + " transformations - we only handle 0 or 1");
-  } else if (tarr.getCount() == 1) {
-    Ogre::Matrix4 xform = computeTransformation(tarr[0]);
+  if (tarr.getCount()) {
+    Ogre::Matrix4 xform = Ogre::Matrix4::IDENTITY;    // begin with an identity transformation
+    for (size_t i = 0; i < tarr.getCount(); ++i) {
+      xform = xform * computeTransformation(tarr[i]);
+    }
 
     // have to split this up into components b/c Ogre::SceneNode has no direct way to set 4x4 transform
     Ogre::Vector3 position, scale;

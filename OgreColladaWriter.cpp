@@ -36,6 +36,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <COLLADAFWMaterial.h>
 #include <COLLADAFWImage.h>
 #include <COLLADAFWVisualScene.h>
+#include <COLLADAFWLookat.h>
+#include <COLLADAFWMatrix.h>
+#include <COLLADAFWScale.h>
+#include <COLLADAFWTranslate.h>
+#include <COLLADAFWRotate.h>
 
 #include <iostream>
 #include <algorithm>
@@ -109,7 +114,7 @@ void OgreCollada::Writer::createMaterials() {
     COLLADAFW::UniqueId effid = matit->second.second;
     EffectMapIterator effit = m_effects.find(effid);
     if (effit == m_effects.end()) {
-      LOG_DEBUG("Could not find effect " + Ogre::StringConverter::toString(effid) + " in storage");
+      LOG_DEBUG("Could not find effect " + Ogre::StringConverter::toString(effid) + " for use in material " + matname);
       continue;
     } else {
       Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(matname, "General");      
@@ -719,3 +724,72 @@ void OgreCollada::Writer::node_dfs_geocheck(const COLLADAFW::Node* n) {
     node_dfs_geocheck(cnodes[i]);
   }
 }
+
+Ogre::Matrix4
+OgreCollada::Writer::computeTransformation(const COLLADAFW::Transformation* trans) {
+  if (trans->getTransformationType() == COLLADAFW::Transformation::LOOKAT) {
+    const COLLADAFW::Lookat& l = dynamic_cast<const COLLADAFW::Lookat&>(*trans);
+    const COLLADABU::Math::Vector3& eye = l.getEyePosition();
+    const COLLADABU::Math::Vector3& center = l.getInterestPointPosition();
+    const COLLADABU::Math::Vector3& up = l.getUpAxisDirection();
+
+    // Untransformed cameras look along the -Z axis and are positioned at the origin
+    // We need to generate a transformation that positions them at the "eye" position,
+    // with rotation changed from direction = (0, 0, -1) upaxis = (0, 1, 0) to
+    // direction = (center - eye) and upaxis = (up)
+
+    // turn these three vectors into an Ogre transformation matrix per recipe found in numerous places online:
+    Ogre::Vector3 eyev(eye.x, eye.y, eye.z);
+    Ogre::Vector3 centerv(center.x, center.y, center.z);
+    Ogre::Vector3 upv(up.x, up.y, up.z);
+    LOG_DEBUG("Got a LOOKAT transformation with eye position " + Ogre::StringConverter::toString(eyev) +
+              ", object position " + Ogre::StringConverter::toString(centerv) +
+              ", and up vector " + Ogre::StringConverter::toString(upv));
+
+    Ogre::Vector3 forwardv = (centerv - eyev).normalisedCopy();
+    Ogre::Vector3 sidev = forwardv.crossProduct(upv);
+    upv = sidev.crossProduct(forwardv);
+    LOG_DEBUG("calculated forward vector " + Ogre::StringConverter::toString(forwardv) +
+              ", side vector " + Ogre::StringConverter::toString(sidev) +
+              ", resultant up vector " + Ogre::StringConverter::toString(upv));
+
+    // create an Ogre matrix from this data
+    // online sources describe how to reorient the entire scene to be displayed through the
+    // camera;  we are doing exactly the reverse, which is why this is a bit different:
+    return Ogre::Matrix4(sidev.x, upv.x, -forwardv.x, eye.x,
+                         sidev.y, upv.y, -forwardv.y, eye.y,
+                         sidev.z, upv.z, -forwardv.z, eye.z,
+                         0.0,     0.0,    0.0,        1.0);
+
+    // cross-check: original camera "forward" and "up" vectors (0, 0, -1) and (0, 1, 0)
+    // produce the right values when transformed by this matrix
+
+  } else if (trans->getTransformationType() == COLLADAFW::Transformation::MATRIX) {
+    const COLLADAFW::Matrix& m = dynamic_cast<const COLLADAFW::Matrix&>(*trans);
+    const COLLADABU::Math::Matrix4& mm = m.getMatrix();
+    // create an Ogre matrix from this data
+    return Ogre::Matrix4(mm.getElement(0, 0), mm.getElement(0, 1), mm.getElement(0, 2), mm.getElement(0, 3),
+                         mm.getElement(1, 0), mm.getElement(1, 1), mm.getElement(1, 2), mm.getElement(1, 3),
+                         mm.getElement(2, 0), mm.getElement(2, 1), mm.getElement(2, 2), mm.getElement(2, 3),
+                         mm.getElement(3, 0), mm.getElement(3, 1), mm.getElement(3, 2), mm.getElement(3, 3));
+  } else if (trans->getTransformationType() == COLLADAFW::Transformation::TRANSLATE) {
+    const COLLADAFW::Translate xlat = dynamic_cast<const COLLADAFW::Translate&>(*trans);
+    COLLADABU::Math::Vector3 const & vec = xlat.getTranslation();
+    return Ogre::Matrix4::getTrans(vec.x, vec.y, vec.z);
+  } else if (trans->getTransformationType() == COLLADAFW::Transformation::ROTATE) {
+    const COLLADAFW::Rotate rot = dynamic_cast<const COLLADAFW::Rotate&>(*trans);
+    Ogre::Vector3 axis(rot.getRotationAxis().x,
+                       rot.getRotationAxis().y,
+                       rot.getRotationAxis().z);
+    Ogre::Quaternion rotation(Ogre::Degree(rot.getRotationAngle()), axis);
+    return Ogre::Matrix4(rotation);
+  } else if (trans->getTransformationType() == COLLADAFW::Transformation::SCALE) {
+    const COLLADAFW::Scale& scale = dynamic_cast<const COLLADAFW::Scale&>(*trans);
+    COLLADABU::Math::Vector3 const& vec = scale.getScale();
+    return Ogre::Matrix4::getScale( vec.x, vec.y, vec.z );
+  } else {
+    LOG_DEBUG("COLLADA WARNING: unknown transformation encountered - ignoring");
+    return Ogre::Matrix4::IDENTITY;
+  }
+}
+

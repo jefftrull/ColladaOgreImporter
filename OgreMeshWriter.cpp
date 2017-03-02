@@ -17,6 +17,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <COLLADAFWGeometry.h>
 #include <COLLADAFWNode.h>
 #include <COLLADAFWEffectCommon.h>
+#include <COLLADAFWScale.h>
+#include <COLLADAFWRotate.h>
 #include <OgreManualObject.h>
 #include <OgreLogManager.h>
 #include "OgreMeshWriter.h"
@@ -49,11 +51,11 @@ bool OgreCollada::MeshWriter::writeGeometry(const COLLADAFW::Geometry* g) {
 void OgreCollada::MeshWriter::pass1Finish() {
   // build scene graph and record transformations for each geometry instantiation
 
-  // determine initial transformation.  Use Collada matrices etc. to avoid repeated reconversions to Ogre
-  COLLADABU::Math::Quaternion orient(m_ColladaRotation.w, m_ColladaRotation.x, m_ColladaRotation.y, m_ColladaRotation.z);
-  COLLADABU::Math::Vector3 scale(m_ColladaScale.x, m_ColladaScale.y, m_ColladaScale.z);
-  COLLADABU::Math::Matrix4 xform;
-  xform.makeTransform(COLLADABU::Math::Vector3::ZERO, scale, orient);
+  // determine initial transformation
+  Ogre::Matrix4 xform;
+  xform.makeTransform(Ogre::Vector3::ZERO,    // no translation
+                      Ogre::Vector3(m_ColladaScale.x, m_ColladaScale.y, m_ColladaScale.z),
+                      Ogre::Quaternion(m_ColladaRotation.w, m_ColladaRotation.x, m_ColladaRotation.y, m_ColladaRotation.z));
 
   // recursively find geometry instances and their transforms
   for (size_t i = 0; i < m_vsRootNodes.size(); ++i) {
@@ -75,22 +77,15 @@ void OgreCollada::MeshWriter::finish() {
 
 // recursively build a table of geometry instances with ID and transform
 // to be accessed when geometries are read in the second pass
-bool OgreCollada::MeshWriter::createSceneDFS(const COLLADAFW::Node* cn,             // node to instantiate
-				    const COLLADABU::Math::Matrix4& xform) // accumulated transform
+bool OgreCollada::MeshWriter::createSceneDFS(const COLLADAFW::Node* cn,  // node to instantiate
+				             Ogre::Matrix4 xn)           // accumulated transform
 {
   // apply this node's transformation matrix to the one inherited from its parent
-  COLLADABU::Math::Matrix4 xn = xform;
   const COLLADAFW::TransformationPointerArray& tarr = cn->getTransformations();
-  if (tarr.getCount() > 1) {
-    LOG_DEBUG("COLLADA WARNING: Scene node has " + boost::lexical_cast<Ogre::String>(tarr.getCount()) + " transformations - we only handle 0 or 1");
-  } else if (tarr.getCount() == 1) {
-    if (tarr[0]->getTransformationType() != COLLADAFW::Transformation::MATRIX) {
-      LOG_DEBUG("COLLADA WARNING: Scene node has non-matrix transformation - ignoring");
-    } else {
-      const COLLADAFW::Matrix& m = dynamic_cast<const COLLADAFW::Matrix&>(*tarr[0]);
-      const COLLADABU::Math::Matrix4& mm = m.getMatrix();
-      xn = xform * mm;
-    }
+  // COLLADA spec says multiple transformations are "postmultiplied in the order in which
+  // they are specified", which I think means like this:
+  for (size_t i = 0; i < tarr.getCount(); ++i) {
+    xn = xn * computeTransformation(tarr[i]);
   }
 
   // record any geometry instances present in this node, along with their attached materials
@@ -102,12 +97,7 @@ bool OgreCollada::MeshWriter::createSceneDFS(const COLLADAFW::Node* cn,         
       // create empty usage list for this geometry
       m_geometryUsage.insert(std::make_pair(gi->getInstanciatedObjectId(), GeoInstUsageList()));
     }
-    Ogre::Matrix4 xform_ogre(xn.getElement(0, 0), xn.getElement(0, 1), xn.getElement(0, 2), xn.getElement(0, 3),
-			     xn.getElement(1, 0), xn.getElement(1, 1), xn.getElement(1, 2), xn.getElement(1, 3),
-			     xn.getElement(2, 0), xn.getElement(2, 1), xn.getElement(2, 2), xn.getElement(2, 3),
-			     xn.getElement(3, 0), xn.getElement(3, 1), xn.getElement(3, 2), xn.getElement(3, 3));
-
-    m_geometryUsage[gi->getInstanciatedObjectId()].push_back(std::make_pair(&(gi->getMaterialBindings()), xform_ogre));
+    m_geometryUsage[gi->getInstanciatedObjectId()].push_back(std::make_pair(&(gi->getMaterialBindings()), xn));
   }
 
   // recursively follow child nodes and library instances

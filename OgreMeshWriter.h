@@ -55,8 +55,8 @@ class MeshWriter : public Writer {
   Ogre::MeshPtr m_mesh;
 
   // scene graph traversal function
-  bool createSceneDFS(const COLLADAFW::Node*,             // node to instantiate
-		      const COLLADABU::Math::Matrix4&);   // accumulated transform
+  bool createSceneDFS(const COLLADAFW::Node*,   // node to instantiate
+		      Ogre::Matrix4);           // accumulated transform
 
   // dispatch classes.  Instead of defining a single writer that checks to see what mode it's in,
   // define two proxy writers, one for each pass, that either forward the write method to its

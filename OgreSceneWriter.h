@@ -48,7 +48,6 @@ class SceneWriter : public Writer {
   // utility functions
   bool createSceneDFS(const COLLADAFW::Node*, Ogre::SceneNode*, const Ogre::String& prefix = "");
   bool processLibraryInstance(const COLLADAFW::InstanceNode*, Ogre::SceneNode*, const Ogre::String& prefix);
-  Ogre::Matrix4 computeTransformation(const COLLADAFW::Transformation*);
 
   Ogre::SceneNode* m_topNode;
   Ogre::SceneManager* m_sceneMgr;

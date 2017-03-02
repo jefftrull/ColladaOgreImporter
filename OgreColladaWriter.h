@@ -23,6 +23,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include <COLLADAFWIWriter.h>
 #include <COLLADAFWMaterialBinding.h>
+#include <COLLADAFWTransformation.h>
 
 #include "OgreColladaWriterBase.h"
 
@@ -87,6 +88,7 @@ class Writer : public WriterBase {
 		   const COLLADAFW::MaterialBindingArray* mba = 0);      // materials to attach
 
   void createMaterials();
+  static Ogre::Matrix4 computeTransformation(const COLLADAFW::Transformation*);
 
   // stats
   bool m_calculateGeometryStats; // whether to calculate and log statistics on geometries (meshes) and their usages
