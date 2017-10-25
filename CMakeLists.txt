@@ -83,12 +83,10 @@ if (WIN32)
 endif()
 
 find_package(Boost REQUIRED filesystem system regex)
-# Ogre's find_package appears to clobber ${Boost_LIBRARIES}
-set(BOOST_LIB_FILES ${Boost_LIBRARIES})
 
 find_package(OGRE 1.8 REQUIRED)
 
-include_directories(SYSTEM ${COLLADAFW_INCLUDE_DIR} ${COLLADASAX_INCLUDE_DIR} ${COLLADA_GENERATED_SAX_INCLUDE_DIR} ${COLLADABASE_INCLUDE_DIR} ${OGRE_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+include_directories( SYSTEM ${COLLADAFW_INCLUDE_DIR} ${COLLADASAX_INCLUDE_DIR} ${COLLADA_GENERATED_SAX_INCLUDE_DIR} ${COLLADABASE_INCLUDE_DIR} ${OGRE_INCLUDE_DIRS} )
 
 if (CMAKE_COMPILER_IS_GNUCXX)
   # for unique_ptr, at least, and possibly other things (lambdas, move semantics)
@@ -106,13 +104,13 @@ endif()
 
 # data conversion app
 add_executable(c2mesh collada2ogre.cpp)
-set(APPLIBS ${OGRE_LIBRARIES} collada_importer ${BOOST_LIB_FILES})
-target_link_libraries(c2mesh ${APPLIBS})
+set(APPLIBS ${OGRE_LIBRARIES} collada_importer )
+target_link_libraries(c2mesh ${APPLIBS} Boost::filesystem Boost::regex )
 
 # viewer app
 
 add_executable(cview simple_viewer.cpp)
-target_link_libraries(cview ${APPLIBS})
+target_link_libraries(cview ${APPLIBS} Boost::filesystem Boost::regex )
 
 # unit tests
 add_subdirectory(test) # comment this out if you don't want tests to be built

@@ -32,7 +32,7 @@ add_custom_target(cube_data ALL DEPENDS cube.dae)
 # define tests themselves
 add_executable(cube_test cube_test.cpp)
 add_test(cube_test cube_test cube.dae)
-target_link_libraries(cube_test ${APPLIBS})
+target_link_libraries(cube_test ${APPLIBS} Boost::filesystem Boost::regex)
 
 # Note that suitable ogre.cfg and plugins.cfg must be in place for this to pass
 # And their _d variants too, if on Windows...
